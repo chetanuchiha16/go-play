@@ -1,0 +1,16 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.out
+
+# Go build cache (usually not committed)
+*.test
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log
