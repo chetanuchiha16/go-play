@@ -25,9 +25,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is required", http.StatusBadRequest)
 		return
 	}
+
 	CacheMutex.Lock()
 	UserCache[len(UserCache)+1] = user
 	CacheMutex.Unlock()
+
+	
 	w.WriteHeader(http.StatusNoContent)
 }
 
