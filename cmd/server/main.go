@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/chetanuchiha16/go-play/internal/user"
+	"github.com/chetanuchiha16/go-play/internal/domain/user"
 )
 
 func main() {
