@@ -1,21 +1,36 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
+	"github.com/chetanuchiha16/go-play/pkg/database"
 )
 
 func main() {
+
+	cfg := config.Load()
+	pool, err := database.NewPool(context.Background(), cfg.DATABASE_URL)
+	if err != nil {
+		log.Fatal("error connecting to the db")
+	}
+
+	userStore := user.NewStore(pool)
+	userHandler := user.NewHandler(userStore)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", user.Hello_Hina)
 
-	mux.HandleFunc("POST /users", user.CreateUser)
-	mux.HandleFunc("GET /users/{id}", user.GetUser)
-	mux.HandleFunc("DELETE /users/{id}", user.DeleteUser)
+	mux.HandleFunc("POST /users", userHandler.CreateUser)
+	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
+	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
 
 	fmt.Println("listening")
 	http.ListenAndServe(":8080", mux)
+
 }
