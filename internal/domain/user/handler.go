@@ -1,52 +1,69 @@
 package user
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"strconv"
+
+	"github.com/chetanuchiha16/go-play/db"
 )
 
 func Hello_Hina(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello")
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user User
+type Handler struct {
+	store Store	
 
-	error := json.NewDecoder(r.Body).Decode(&user)
+}
+
+func NewHandler(s Store) *Handler{
+	return &Handler{
+		store: s,
+	}
+}
+
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var arg db.CreateUserParams
+
+	error := json.NewDecoder(r.Body).Decode(&arg)
 
 	if error != nil {
 		http.Error(w, error.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if user.Name == "" {
+	if arg.Name == "" {
 		http.Error(w, "Name is required", http.StatusBadRequest)
 		return
 	}
 
-	CacheMutex.Lock()
-	UserCache[len(UserCache)+1] = user
-	CacheMutex.Unlock()
+	h.store.CreateUser(r.Context(),arg)
+	// CacheMutex.Lock()
+	// UserCache[len(UserCache)+1] = user
+	// CacheMutex.Unlock()
 
 	
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	CacheMutex.RLock()
-	user, ok := UserCache[id]
-	CacheMutex.RUnlock()
 
-	if !ok {
-		http.Error(w, "user does not exist", http.StatusNotFound)
-		return
-	}
+	user, err:= h.store.GetUser(r.Context(), id)
+
+	// CacheMutex.RLock()
+	// user, ok := UserCache[id]
+	// CacheMutex.RUnlock()
+
+	// if !ok {
+	// 	http.Error(w, "user does not exist", http.StatusNotFound)
+	// 	return
+	// }
 	w.Header().Set("Content-Type", "application/json")
 	data, err := json.Marshal(user)
 
@@ -58,23 +75,25 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 
 	}
 
-	CacheMutex.Lock()
-	defer CacheMutex.Unlock()
-	if _, ok := UserCache[id]; !ok {
-		http.Error(w, "user does not exist", http.StatusNotFound)
-		return
-	}
+	// CacheMutex.Lock()
+	// defer CacheMutex.Unlock()
+	// if _, ok := UserCache[id]; !ok {
+	// 	http.Error(w, "user does not exist", http.StatusNotFound)
+	// 	return
+	// }
 
-	CacheMutex.Lock()
-	delete(UserCache, id)
+	h.store.DeleteUser(r.Context(), id)
+
+	// CacheMutex.Lock()
+	// delete(UserCache, id)
 
 	// _, err := json.Marshal(user)
 
