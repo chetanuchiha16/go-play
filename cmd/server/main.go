@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/pkg/database"
@@ -31,6 +30,9 @@ func main() {
 	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
 
 	fmt.Println("listening")
-	http.ListenAndServe(":8080", mux)
+	err = http.ListenAndServe(":8080", mux)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }

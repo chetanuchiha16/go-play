@@ -41,6 +41,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.store.CreateUser(r.Context(), arg)
 	if err != nil {
 		http.Error(w, "user could not be created", http.StatusInternalServerError)
+		return
 	}
 	// CacheMutex.Lock()
 	// UserCache[len(UserCache)+1] = user
@@ -50,16 +51,22 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 
-	w.WriteHeader(http.StatusNoContent)
+	// w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	user, err := h.store.GetUser(r.Context(), id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 
 	// CacheMutex.RLock()
 	// user, ok := UserCache[id]
@@ -99,6 +106,7 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "could not be deleted", http.StatusInternalServerError)
+		return
 	}
 
 	// CacheMutex.Lock()
