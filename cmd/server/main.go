@@ -23,7 +23,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", user.Hello_Hina)
+	// mux.HandleFunc("/", user.Hello_Hina)
 
 	mux.HandleFunc("POST /users", userHandler.CreateUser)
 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)

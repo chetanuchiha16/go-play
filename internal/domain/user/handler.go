@@ -40,7 +40,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.store.CreateUser(r.Context(), arg)
 	if err != nil {
-		http.Error(w, "user could not be created", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// CacheMutex.Lock()
