@@ -19,7 +19,8 @@ func main() {
 	}
 
 	userStore := user.NewStore(pool)
-	userHandler := user.NewHandler(userStore)
+	userService := user.NewService(userStore)
+	userHandler := user.NewHandler(userService)
 
 	mux := http.NewServeMux()
 

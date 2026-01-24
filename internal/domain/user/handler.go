@@ -14,12 +14,12 @@ func Hello_Hina(w http.ResponseWriter, r *http.Request) {
 }
 
 type Handler struct {
-	store Store
+	svc Service
 }
 
-func NewHandler(s Store) *Handler {
+func NewHandler(svc Service) *Handler {
 	return &Handler{
-		store: s,
+		svc: svc,
 	}
 }
 
@@ -38,7 +38,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.store.CreateUser(r.Context(), arg)
+	user, err := h.svc.CreateUser(r.Context(), arg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -61,7 +61,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.store.GetUser(r.Context(), id)
+	user, err := h.svc.GetUser(r.Context(), id)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -102,7 +102,7 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	err = h.store.DeleteUser(r.Context(), id)
+	err = h.svc.DeleteUser(r.Context(), id)
 
 	if err != nil {
 		http.Error(w, "could not be deleted", http.StatusInternalServerError)
