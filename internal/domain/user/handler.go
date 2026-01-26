@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/chetanuchiha16/go-play/db"
+	"github.com/go-playground/validator/v10"
 )
 
 func Hello_Hina(w http.ResponseWriter, r *http.Request) {
@@ -14,29 +15,40 @@ func Hello_Hina(w http.ResponseWriter, r *http.Request) {
 }
 
 type Handler struct {
-	svc Service
+	svc      Service
+	validate *validator.Validate
 }
 
 func NewHandler(svc Service) *Handler {
 	return &Handler{
-		svc: svc,
+		svc:      svc,
+		validate: validator.New(),
 	}
 }
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var arg db.CreateUserParams
+	var req CreateUserShema
 
-	error := json.NewDecoder(r.Body).Decode(&arg)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-	if error != nil {
-		http.Error(w, error.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+
 	}
 
-	if arg.Name == "" {
-		http.Error(w, "Name is required", http.StatusBadRequest)
-		return
+	if err := h.validate.Struct(req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+
+	arg := db.CreateUserParams{
+		Name:  req.Name,
+		Email: req.Email,
+	}
+
+	// if arg.Name == "" {
+	// 	http.Error(w, "Name is required", http.StatusBadRequest)
+	// 	return
+	// }
 
 	user, err := h.svc.CreateUser(r.Context(), arg)
 	if err != nil {
