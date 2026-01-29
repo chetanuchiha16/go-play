@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/pkg/database"
+	"github.com/chetanuchiha16/go-play/pkg/middleware"
 )
 
 func main() {
@@ -30,8 +32,10 @@ func main() {
 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
 	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
 
+	loggedRouter := middleware.LoggerMiddleware(mux)
+
 	fmt.Println("listening")
-	err = http.ListenAndServe(":8080", mux)
+	err = http.ListenAndServe(":8080", loggedRouter)
 	if err != nil {
 		log.Fatal(err)
 	}
