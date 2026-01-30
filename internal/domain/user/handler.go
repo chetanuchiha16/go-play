@@ -89,14 +89,15 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 	w.Header().Set("Content-Type", "application/json")
-	data, err := json.Marshal(user)
+	// data, err := json.Marshal(user)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 	w.WriteHeader(http.StatusOK)
-	w.Write(data)
+	// w.Write(data)
+	json.NewEncoder(w).Encode(user)
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
