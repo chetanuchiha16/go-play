@@ -31,6 +31,7 @@ func main() {
 	mux.HandleFunc("POST /users", userHandler.CreateUser)
 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
 	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
+	mux.HandleFunc("GET /users", userHandler.ListUser)
 
 	loggedRouter := middleware.LoggerMiddleware(mux)
 

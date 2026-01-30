@@ -132,3 +132,14 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) ListUser(w http.ResponseWriter, r *http.Request) {
+	user, err := h.svc.ListUsers(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	json.NewEncoder(w).Encode(user)
+	w.Header().Set("ContentType", "application/json")
+	
+}
