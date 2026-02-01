@@ -38,7 +38,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 }
 
 func LoggerMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { //HadleFunc is of type func
 		start := time.Now()
 		lrw := &loggingResponseWriter{w, http.StatusOK}
 
