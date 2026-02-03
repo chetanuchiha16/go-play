@@ -8,8 +8,8 @@ import (
 
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
-	"github.com/chetanuchiha16/go-play/pkg/database"
-	"github.com/chetanuchiha16/go-play/pkg/middleware"
+	"github.com/chetanuchiha16/go-play/internal/database"
+	"github.com/chetanuchiha16/go-play/internal/middleware"
 )
 
 func main() {
