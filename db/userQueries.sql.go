@@ -12,7 +12,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (name, email)
 VALUES ($1, $2)
-RETURNING id, name, email, created_at
+RETURNING id, name, password_hash, email, created_at
 `
 
 type CreateUserParams struct {
@@ -26,6 +26,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.PasswordHash,
 		&i.Email,
 		&i.CreatedAt,
 	)
@@ -43,7 +44,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, created_at FROM users
+SELECT id, name, password_hash, email, created_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -53,6 +54,25 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.PasswordHash,
+		&i.Email,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, password_hash, email, created_at FROM users
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PasswordHash,
 		&i.Email,
 		&i.CreatedAt,
 	)
@@ -60,7 +80,7 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, created_at FROM users
+SELECT id, name, password_hash, email, created_at FROM users
 ORDER BY id
 `
 
@@ -76,6 +96,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.PasswordHash,
 			&i.Email,
 			&i.CreatedAt,
 		); err != nil {
@@ -93,7 +114,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET name = $2, email = $3
 WHERE id = $1
-RETURNING id, name, email, created_at
+RETURNING id, name, password_hash, email, created_at
 `
 
 type UpdateUserParams struct {
@@ -108,6 +129,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.PasswordHash,
 		&i.Email,
 		&i.CreatedAt,
 	)
