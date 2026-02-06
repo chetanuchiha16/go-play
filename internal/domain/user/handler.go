@@ -42,8 +42,9 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	arg := db.CreateUserParams{
-		Name:  req.Name,
-		Email: req.Email,
+		Name:         req.Name,
+		Email:        req.Email,
+		PasswordHash: req.Password,
 	}
 
 	// if arg.Name == "" {
