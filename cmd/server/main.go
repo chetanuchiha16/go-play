@@ -33,6 +33,7 @@ func main() {
 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
 	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
 	mux.HandleFunc("GET /users", userHandler.ListUser)
+	mux.HandleFunc("GET /login", userHandler.Login)
 
 	loggedRouter := middleware.LoggerMiddleware(mux)
 

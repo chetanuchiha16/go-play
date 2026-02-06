@@ -12,6 +12,7 @@ type Store interface {
 	CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context) ([]db.User, error)
+	GetUserByEmail(ctx context.Context, email string) (db.User, error)
 }
 
 type SQLStore struct {
