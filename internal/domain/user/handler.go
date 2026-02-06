@@ -57,13 +57,19 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	res := UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 	// CacheMutex.Lock()
 	// UserCache[len(UserCache)+1] = user
 	// CacheMutex.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(res)
 
 	// w.WriteHeader(http.StatusNoContent)
 }
@@ -80,6 +86,12 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
+	}
+	res := UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
 	}
 
 	// CacheMutex.RLock()
@@ -99,7 +111,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	// }
 	w.WriteHeader(http.StatusOK)
 	// w.Write(data)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -137,14 +149,14 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListUser(w http.ResponseWriter, r *http.Request) {
-	user, err := h.svc.ListUsers(r.Context())
+	users, err := h.svc.ListUsers(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(users)
 
 }
 
@@ -156,8 +168,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	res := UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(res)
 }
