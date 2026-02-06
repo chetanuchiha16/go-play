@@ -24,6 +24,7 @@ func NewService(s Store) *userService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, args db.CreateUserParams) (db.User, error) {
+	
 	return s.store.CreateUser(ctx, args)
 }
 
