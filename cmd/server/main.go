@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal("error connecting to the db")
 	}
+	defer pool.Close()
 
 	userStore := user.NewStore(pool)
 	userService := user.NewService(userStore)

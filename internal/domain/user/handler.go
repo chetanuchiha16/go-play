@@ -38,6 +38,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validate.Struct(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	arg := db.CreateUserParams{
@@ -138,9 +139,11 @@ func (h *Handler) ListUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.svc.ListUsers(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
-	w.Header().Set("ContentType", "application/json")
+
 	
 }
