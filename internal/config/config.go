@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	DATABASE_URL string `mapstructure:"DATABASE_URL"`
+	JWT_SECRET string `mapstructure:"JWT_SECRET"`
 }
 
 func Load() Config {
