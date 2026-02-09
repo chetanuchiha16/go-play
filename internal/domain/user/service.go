@@ -14,7 +14,7 @@ type Service interface {
 	GetUser(ctx context.Context, id int64) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context) ([]db.User, error)
-	Login(ctx context.Context, email, password string) (db.User,error)
+	Login(ctx context.Context, email, password string) (user db.User, token string, err error)
 }
 
 type userService struct {
@@ -57,11 +57,17 @@ func (s *userService) ListUsers(ctx context.Context) ([]db.User, error) {
 	return s.store.ListUsers(ctx)
 }
 
-func (s *userService) Login(ctx context.Context, email, password string) (db.User,error) {
-	user, err := s.store.GetUserByEmail(ctx, email)
+func (s *userService) Login(ctx context.Context, email, password string) (user db.User, token string, err error) {
+	user, err = s.store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return db.User{}, err
+		return db.User{}, "", err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	return user, err
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return db.User{}, "", err
+	}
+	token, err = GenerateToken(user.ID)
+	if err != nil {
+		return db.User{}, "", err
+	}
+	return user, token, nil
 }
