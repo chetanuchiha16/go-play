@@ -24,7 +24,7 @@ func init() {
 		TimeFormat: "15:04:05",
 		NoColor:    false, // Ensure colors are enabled
 	}
-	log.Logger = zerolog.New(output).With().Timestamp().Logger()
+	log.Logger = zerolog.New(output).With().Timestamp().Caller().Logger()
 }
 
 type loggingResponseWriter struct {

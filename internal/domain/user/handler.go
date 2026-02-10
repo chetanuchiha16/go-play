@@ -8,6 +8,7 @@ import (
 
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog/log"
 )
 
 func Hello_Hina(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +166,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&emailAndPassword)
 	user, token, err := h.svc.Login(r.Context(), emailAndPassword.Email, emailAndPassword.Password)
 	if err != nil {
+		log.Error().Err(err).Msg("Login failed")
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 	res := LoginResponse{
