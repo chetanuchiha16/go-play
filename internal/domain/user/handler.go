@@ -163,16 +163,19 @@ func (h *Handler) ListUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var emailAndPassword struct{ Email, Password string } // capital so json can see it
 	json.NewDecoder(r.Body).Decode(&emailAndPassword)
-	user, err := h.svc.Login(r.Context(), emailAndPassword.Email, emailAndPassword.Password)
+	user, token, err := h.svc.Login(r.Context(), emailAndPassword.Email, emailAndPassword.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	res := UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
+	res := LoginResponse{
+		Token: token,
+		User: UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+		},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

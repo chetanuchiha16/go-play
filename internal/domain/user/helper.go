@@ -15,6 +15,6 @@ func GenerateToken(user_id int64) (string, error) {
 		"iat": time.Now().Unix(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256,claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
 	return token.SignedString(jwtkey)
 }
