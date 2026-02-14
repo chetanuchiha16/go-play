@@ -1,20 +1,23 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 // Define simple ANSI codes
 const (
-	colorReset  = "\033[0m"
-	colorRed    = "\033[31m"
-	colorGreen  = "\033[32m"
+	colorReset = "\033[0m"
+	colorRed   = "\033[31m"
+	colorGreen = "\033[32m"
 	// colorYellow = "\033[33m"
 )
 
@@ -59,7 +62,7 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 		coloredStatus := fmt.Sprintf("%s%d%s", statusColor, lrw.statusCode, colorReset)
 
 		// 3. Print the log
-		// Note: We use log.Info() for everything now so the whole line 
+		// Note: We use log.Info() for everything now so the whole line
 		// isn't red—only the status code we just formatted.
 		log.Info().Msgf("%-3s %s %s %s",
 			r.Method,
@@ -67,5 +70,27 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			coloredStatus,
 			time.Since(start),
 		)
+	})
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorisation")
+		if authHeader == "" {
+			http.Error(w, "Authorisation header required", http.StatusUnauthorized)
+			return
+		}
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			http.Error(w, "Invalid authorisation format", http.StatusUnauthorized)
+		}
+
+		claims, err := user.ValidateToken(parts[1])
+		if err != nil {
+			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+		}
+		ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
+		next.ServeHTTP(w, r.WithContext(ctx))
+
 	})
 }
