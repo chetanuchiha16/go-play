@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/chetanuchiha16/go-play/internal/config"
-	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/database"
+	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
 )
 
@@ -31,7 +31,7 @@ func main() {
 
 	mux.HandleFunc("POST /users", userHandler.CreateUser)
 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
-	mux.HandleFunc("DELETE /users/{id}", userHandler.DeleteUser)
+	mux.Handle("DELETE /users/{id}", middleware.AuthMiddleware(http.HandlerFunc(userHandler.DeleteUser)))
 	mux.HandleFunc("GET /users", userHandler.ListUser)
 	mux.HandleFunc("GET /login", userHandler.Login)
 
