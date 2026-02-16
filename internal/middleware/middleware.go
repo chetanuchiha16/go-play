@@ -83,11 +83,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			http.Error(w, "Invalid authorisation format", http.StatusUnauthorized)
+			return
 		}
 
 		claims, err := user.ValidateToken(parts[1])
 		if err != nil {
 			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+			return // do not forget to return after hitting errors
 		}
 		ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
 		next.ServeHTTP(w, r.WithContext(ctx))
