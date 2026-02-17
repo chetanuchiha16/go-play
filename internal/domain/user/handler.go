@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/go-playground/validator/v10"
@@ -116,7 +117,13 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	claims, err := ValidateToken(token)
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if claims["user_id"] != id {
+		http.Error(w, "You cannot delete other user", http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
