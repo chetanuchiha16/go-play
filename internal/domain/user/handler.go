@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/go-playground/validator/v10"
@@ -117,13 +116,20 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
-	claims, err := ValidateToken(token)
+	// token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	// claims, err := ValidateToken(token)
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if claims["user_id"] != id {
-		http.Error(w, "You cannot delete other user", http.StatusUnauthorized)
+	// if claims["user_id"] != id {
+	// 	http.Error(w, "You cannot delete other user", http.StatusUnauthorized)
+	// 	return
+	// }
+
+	auth_id := int64(r.Context().Value("user_id").(float64)) // In JSON, all numbers are floats. Since JWTs are just encoded JSON, the library converts your user_id to a float64 by default.
+	if auth_id != id {
+		http.Error(w, "You cannot delete other user", http.StatusForbidden)
 		return
 	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
