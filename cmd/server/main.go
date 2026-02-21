@@ -35,11 +35,11 @@ func main() {
 	mux.HandleFunc("GET /users", userHandler.ListUser)
 	mux.HandleFunc("GET /login", userHandler.Login)
 
-	reqIdRouter := middleware.RequestIdMiddleWare(mux)
-	loggedRouter := middleware.LoggerMiddleware(reqIdRouter)
+	loggedRouter := middleware.LoggerMiddleware(mux)
+	reqIdRouter := middleware.RequestIdMiddleWare(loggedRouter)
 
 	fmt.Println("listening")
-	err = http.ListenAndServe(":8080", loggedRouter)
+	err = http.ListenAndServe(":8080", reqIdRouter)
 	if err != nil {
 		log.Fatal(err)
 	}

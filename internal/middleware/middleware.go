@@ -45,7 +45,7 @@ func RequestIdMiddleWare(next http.Handler) http.Handler {
 
 		request_id := fmt.Sprintf("%d", time.Now().UnixNano())
 		ctx := context.WithValue(r.Context(), "request_id", request_id)
-		r.Header.Set("X-Request-ID", request_id)
+		w.Header().Set("X-Request-ID", request_id)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
