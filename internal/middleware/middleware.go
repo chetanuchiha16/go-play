@@ -74,7 +74,13 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 		// 3. Print the log
 		// Note: We use log.Info() for everything now so the whole line
 		// isn't red—only the status code we just formatted.
-		log.Info().Msgf("%-3s %s %s %s",
+		reqId, ok := r.Context().Value("request_id").(string)
+		if !ok {
+			reqId = "unknown"
+		}
+		log.Info().
+		Str("id ", reqId).
+		Msgf("%-3s %s %s %s",
 			r.Method,
 			r.URL.Path,
 			coloredStatus,
