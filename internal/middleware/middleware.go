@@ -40,6 +40,16 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) { // our handler calls t
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
+func RequestIdMiddleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func (w http.ResponseWriter, r * http.Request) {
+
+		request_id := fmt.Sprintf("%d", time.Now().UnixNano())
+		ctx := context.WithValue(r.Context(), "request_id", request_id)
+		r.Header.Set("X-Request-ID", request_id)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { //HadleFunc is of type func, this is a type conversion so it satisfy the interface and can call ServeHttp method
 		start := time.Now()
