@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/database"
@@ -38,10 +41,20 @@ func main() {
 	loggedRouter := middleware.LoggerMiddleware(mux)
 	reqIdRouter := middleware.RequestIdMiddleWare(loggedRouter)
 
-	fmt.Println("listening")
-	err = http.ListenAndServe(":8080", reqIdRouter)
-	if err != nil {
-		log.Fatal(err)
-	}
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
+	go func(){
+
+		fmt.Println("listening")
+		err = http.ListenAndServe(":8080", reqIdRouter)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	<-stop
+
+	fmt.Printf("\n Shutting down gracefully")
+			
 }
