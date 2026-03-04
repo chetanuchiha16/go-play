@@ -1,0 +1,61 @@
+package main
+
+// import (
+// 	"context"
+// 	"fmt"
+// 	"log"
+// 	"net/http"
+// 	"os"
+// 	"os/signal"
+// 	"syscall"
+
+// 	"github.com/chetanuchiha16/go-play/internal/config"
+// 	"github.com/chetanuchiha16/go-play/internal/database"
+// 	"github.com/chetanuchiha16/go-play/internal/domain/user"
+// 	"github.com/chetanuchiha16/go-play/internal/middleware"
+// )
+
+// func main() {
+
+// 	cfg := config.Load()
+// 	pool, err := database.NewPool(context.Background(), cfg.DATABASE_URL)
+// 	if err != nil {
+// 		log.Fatal("error connecting to the db")
+// 	}
+// 	defer pool.Close()
+
+// 	userStore := database.NewStore(pool)
+	
+// 	userService := user.NewService(userStore)
+// 	userHandler := user.NewHandler(userService)
+
+// 	mux := http.NewServeMux()
+
+// 	// mux.HandleFunc("/", user.Hello_Hina)
+
+// 	mux.HandleFunc("POST /users", userHandler.CreateUser)
+// 	mux.HandleFunc("GET /users/{id}", userHandler.GetUser)
+// 	mux.Handle("DELETE /users/{id}", middleware.AuthMiddleware(http.HandlerFunc(userHandler.DeleteUser)))
+// 	mux.HandleFunc("GET /users", userHandler.ListUser)
+// 	mux.HandleFunc("GET /login", userHandler.Login)
+
+// 	loggedRouter := middleware.LoggerMiddleware(mux)
+// 	reqIdRouter := middleware.RequestIdMiddleWare(loggedRouter)
+
+// 	stop := make(chan os.Signal, 1)
+// 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+// 	go func(){
+
+// 		fmt.Println("listening")
+// 		err = http.ListenAndServe(":8080", reqIdRouter)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	}()
+
+// 	<-stop
+
+// 	fmt.Printf("\n Shutting down gracefully")
+			
+// }
