@@ -9,6 +9,8 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option" // Import for security options
+	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
 )
 
 func main() {
@@ -19,31 +21,33 @@ func main() {
 	}
 	defer pool.Close()
 
-	// 1. Setup our Store and Service
 	userStore := database.NewStore(pool)
 	userService := user.NewService(userStore)
 	userHandler := user.NewHandler(userService)
 
-	// 2. Initialize Fuego Server
 	s := fuego.NewServer(
 		fuego.WithAddr("localhost:8080"),
+		// This EXACT block fixes the compiler error by using the expected openapi3 types
+		fuego.WithSecurity(openapi3.SecuritySchemes{
+			"bearerAuth": &openapi3.SecuritySchemeRef{
+				Value: openapi3.NewJWTSecurityScheme(),
+			},
+		}),
 	)
 
-	// 3. Add Middlewares (Fuego accepts standard middleware)
 	fuego.Use(s, middleware.RequestIdMiddleWare)
 	fuego.Use(s, middleware.LoggerMiddleware)
 
-	// 4. Routes (Fuego handles the methods and paths)
 	fuego.Post(s, "/users", userHandler.CreateUser)
 	fuego.Get(s, "/users/{id}", userHandler.GetUser)
 	fuego.Get(s, "/users", userHandler.ListUser)
 	fuego.Post(s, "/login", userHandler.Login)
 
-	// Secure routes
 	authGroup := fuego.Group(s, "")
 	fuego.Use(authGroup, middleware.AuthMiddleware)
-	fuego.Delete(authGroup, "/users/{id}", userHandler.DeleteUser)
+	
+	// Use option.Security to tell Swagger this specific route needs the token
+	fuego.Delete(authGroup, "/users/{id}", userHandler.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
 
-	// 5. Run (Handles graceful shutdown automatically)
 	s.Run()
 }
