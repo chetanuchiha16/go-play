@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/chetanuchiha16/go-play/db"
+	"github.com/chetanuchiha16/go-play/internal/database"
 )
 
 type Service interface {
@@ -18,10 +19,10 @@ type Service interface {
 }
 
 type userService struct {
-	store Store
+	store database.Store
 }
 
-func NewService(s Store) *userService {
+func NewService(s database.Store) *userService {
 	return &userService{
 		store: s,
 	}

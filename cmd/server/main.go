@@ -24,7 +24,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	userStore := user.NewStore(pool)
+	userStore := database.NewStore(pool)
+	
 	userService := user.NewService(userStore)
 	userHandler := user.NewHandler(userService)
 
