@@ -1,199 +1,70 @@
 package user
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"strconv"
-
+	"strconv" // To convert the ID string to an int64
+	"github.com/go-fuego/fuego"
 	"github.com/chetanuchiha16/go-play/db"
-	"github.com/go-playground/validator/v10"
-	"github.com/rs/zerolog/log"
 )
 
-func Hello_Hina(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello")
-}
-
 type Handler struct {
-	svc      Service
-	validate *validator.Validate
+	service Service
 }
 
-func NewHandler(svc Service) *Handler {
-	return &Handler{
-		svc:      svc,
-		validate: validator.New(),
-	}
+func NewHandler(s Service) *Handler {
+	return &Handler{service: s}
 }
 
-func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var req CreateUserShema
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-
-	}
-
-	if err := h.validate.Struct(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	arg := db.CreateUserParams{
-		Name:         req.Name,
-		Email:        req.Email,
-		PasswordHash: req.Password,
-	}
-
-	// if arg.Name == "" {
-	// 	http.Error(w, "Name is required", http.StatusBadRequest)
-	// 	return
-	// }
-
-	user, err := h.svc.CreateUser(r.Context(), arg)
+// 1. CreateUser (STAYS THE SAME - This one uses a Body)
+func (h *Handler) CreateUser(c fuego.ContextWithBody[db.CreateUserParams]) (db.User, error) {
+	body, err := c.Body()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return db.User{}, err
 	}
-	res := UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-	}
-	// CacheMutex.Lock()
-	// UserCache[len(UserCache)+1] = user
-	// CacheMutex.Unlock()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(res)
-
-	// w.WriteHeader(http.StatusNoContent)
+	return h.service.CreateUser(c.Context(), body)
 }
 
-func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+// 2. GetUser (UPDATED: Use ContextNoBody)
+func (h *Handler) GetUser(c fuego.ContextNoBody) (db.User, error) {
+	// Fuego gives you path parameters as strings
+	idStr := c.PathParam("id")
+	
+	// Convert string "123" to int64
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return db.User{}, err // Fuego will turn this into a 400 Bad Request automatically
 	}
 
-	user, err := h.svc.GetUser(r.Context(), id)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-	res := UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-	}
-
-	// CacheMutex.RLock()
-	// user, ok := UserCache[id]
-	// CacheMutex.RUnlock()
-
-	// if !ok {
-	// 	http.Error(w, "user does not exist", http.StatusNotFound)
-	// 	return
-	// }
-	w.Header().Set("Content-Type", "application/json")
-	// data, err := json.Marshal(user)
-
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	w.WriteHeader(http.StatusOK)
-	// w.Write(data)
-	json.NewEncoder(w).Encode(res)
+	return h.service.GetUser(c.Context(), id)
 }
 
-func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	// token := strings.Split(r.Header.Get("Authorization"), " ")[1]
-	// claims, err := ValidateToken(token)
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	// if claims["user_id"] != id {
-	// 	http.Error(w, "You cannot delete other user", http.StatusUnauthorized)
-	// 	return
-	// }
-
-	auth_id := int64(r.Context().Value("user_id").(float64)) // In JSON, all numbers are floats. Since JWTs are just encoded JSON, the library converts your user_id to a float64 by default.
-	if auth_id != id {
-		http.Error(w, "You cannot delete other user", http.StatusForbidden)
-		return
-	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-
-	}
-
-	// CacheMutex.Lock()
-	// defer CacheMutex.Unlock()
-	// if _, ok := UserCache[id]; !ok {
-	// 	http.Error(w, "user does not exist", http.StatusNotFound)
-	// 	return
-	// }
-
-	err = h.svc.DeleteUser(r.Context(), id)
-
-	if err != nil {
-		http.Error(w, "could not be deleted", http.StatusInternalServerError)
-		return
-	}
-
-	// CacheMutex.Lock()
-	// delete(UserCache, id)
-
-	// _, err := json.Marshal(user)
-
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
-
-	w.WriteHeader(http.StatusNoContent)
+// 3. ListUser (STAYS THE SAME)
+func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.User, error) {
+	return h.service.ListUsers(c.Context())
 }
 
-func (h *Handler) ListUser(w http.ResponseWriter, r *http.Request) {
-	users, err := h.svc.ListUsers(r.Context())
+// 4. DeleteUser (UPDATED: Use ContextNoBody)
+func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
+	idStr := c.PathParam("id")
+	id, _ := strconv.ParseInt(idStr, 10, 64)
+
+	err := h.service.DeleteUser(c.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return nil, err
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
-
+	return map[string]string{"message": "user deleted"}, nil
 }
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	var emailAndPassword struct{ Email, Password string } // capital so json can see it
-	json.NewDecoder(r.Body).Decode(&emailAndPassword)
-	user, token, err := h.svc.Login(r.Context(), emailAndPassword.Email, emailAndPassword.Password)
-	if err != nil {
-		log.Error().Err(err).Msg("Login failed")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+// 5. Login (STAYS THE SAME - This one uses a Body)
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
-		return
+func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (map[string]string, error) {
+	body, _ := c.Body()
+	_, token, err := h.service.Login(c.Context(), body.Email, body.Password)
+	if err != nil {
+		return nil, err
 	}
-	res := LoginResponse{
-		Token: token,
-		User: UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt,
-		},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(res)
+	return map[string]string{"token": token}, nil
 }
