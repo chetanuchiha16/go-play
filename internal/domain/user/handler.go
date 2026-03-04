@@ -60,11 +60,22 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (map[string]string, error) {
-	body, _ := c.Body()
-	_, token, err := h.service.Login(c.Context(), body.Email, body.Password)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]string{"token": token}, nil
+// Use the LoginResponse struct instead of map[string]string
+func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, error) {
+    body, _ := c.Body()
+    user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
+    if err != nil {
+        return LoginResponse{}, err
+    }
+
+    // Return a structured response that Swagger can read
+    return LoginResponse{
+        Token: token,
+        User: UserResponse{
+            ID:        user.ID,
+            Name:      user.Name,
+            Email:     user.Email,
+            CreatedAt: user.CreatedAt,
+        },
+    }, nil
 }
