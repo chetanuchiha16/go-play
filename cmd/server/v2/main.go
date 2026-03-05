@@ -44,7 +44,7 @@ func main() {
 	fuego.Use(s, middleware.RequestIdMiddleWare)
 	fuego.Use(s, middleware.LoggerMiddleware)
 
-	fuego.Post(s, "/health", func(c fuego.ContextNoBody) (string, error) {
+	fuego.Get(s, "/health", func(c fuego.ContextNoBody) (string, error) {
 
 		err := pool.Ping(c.Context())
 		if err != nil {
