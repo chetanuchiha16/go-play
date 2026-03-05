@@ -65,7 +65,10 @@ func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, e
     body, _ := c.Body()
     user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
     if err != nil {
-        return LoginResponse{}, err
+        return LoginResponse{}, fuego.UnauthorizedError{
+			Title: "you are not a user, please register",
+			Detail: err.Error(),
+		}
     }
 
     // Return a structured response that Swagger can read
