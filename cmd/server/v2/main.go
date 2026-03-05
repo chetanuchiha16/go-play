@@ -2,15 +2,20 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/database"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
+	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option" // Import for security options
-	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
 )
 
 func main() {
@@ -45,9 +50,27 @@ func main() {
 
 	authGroup := fuego.Group(s, "")
 	fuego.Use(authGroup, middleware.AuthMiddleware)
-	
+
 	// Use option.Security to tell Swagger this specific route needs the token
 	fuego.Delete(authGroup, "/users/{id}", userHandler.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
 
-	s.Run()
+	stop := make(chan os.Signal, 1)
+	go func() {
+		log.Println("listening at localhost:8080")
+		s.Run()
+	}()
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+	fmt.Println("kill recieved")
+	fmt.Println("Shutting down gracefully")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	fmt.Println("resourse releasing")
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatalf("forcfully shutting down %v", err)
+	}
+	pool.Close()
+
 }
