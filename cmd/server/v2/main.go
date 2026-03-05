@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,6 +43,19 @@ func main() {
 
 	fuego.Use(s, middleware.RequestIdMiddleWare)
 	fuego.Use(s, middleware.LoggerMiddleware)
+
+	fuego.Post(s, "/health", func(c fuego.ContextNoBody) (string, error) {
+
+		err := pool.Ping(c.Context())
+		if err != nil {
+			return "Service unavailable", fuego.InternalServerError{
+				Status: http.StatusServiceUnavailable,
+				Detail: err.Error(),
+				Title:  "Database connection failed",
+			}
+		}
+		return "OK", nil
+	})
 
 	fuego.Post(s, "/users", userHandler.CreateUser)
 	fuego.Get(s, "/users/{id}", userHandler.GetUser)
