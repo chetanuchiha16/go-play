@@ -16,7 +16,6 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/middleware"
 	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
 	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/option" // Import for security options
 )
 
 func main() {
@@ -57,16 +56,7 @@ func main() {
 		return "OK", nil
 	})
 
-	fuego.Post(s, "/users", userHandler.CreateUser)
-	fuego.Get(s, "/users/{id}", userHandler.GetUser)
-	fuego.Get(s, "/users", userHandler.ListUser)
-	fuego.Post(s, "/login", userHandler.Login)
-
-	authGroup := fuego.Group(s, "")
-	fuego.Use(authGroup, middleware.AuthMiddleware)
-
-	// Use option.Security to tell Swagger this specific route needs the token
-	fuego.Delete(authGroup, "/users/{id}", userHandler.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
+	userHandler.RegisterUserRoutes(s, middleware.AuthMiddleware)
 
 	stop := make(chan os.Signal, 1)
 	go func() {

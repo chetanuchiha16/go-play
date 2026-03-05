@@ -41,7 +41,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) { // our handler calls t
 }
 
 func RequestIdMiddleWare(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r * http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		request_id := fmt.Sprintf("%d", time.Now().UnixNano())
 		ctx := context.WithValue(r.Context(), "request_id", request_id) // take request context and store in our context
@@ -79,13 +79,13 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 			reqId = "unknown"
 		}
 		log.Info().
-		Str("id ", reqId).
-		Msgf("%-3s %s %s %s",
-			r.Method,
-			r.URL.Path,
-			coloredStatus,
-			time.Since(start),
-		)
+			Str("id ", reqId).
+			Msgf("%-3s %s %s %s",
+				r.Method,
+				r.URL.Path,
+				coloredStatus,
+				time.Since(start),
+			)
 	})
 }
 

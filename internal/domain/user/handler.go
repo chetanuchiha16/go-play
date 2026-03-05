@@ -1,9 +1,13 @@
 package user
 
 import (
+	"net/http"
 	"strconv" // To convert the ID string to an int64
-	"github.com/go-fuego/fuego"
+
 	"github.com/chetanuchiha16/go-play/db"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 )
 
 type Handler struct {
@@ -12,6 +16,22 @@ type Handler struct {
 
 func NewHandler(s Service) *Handler {
 	return &Handler{service: s}
+}
+
+func (h Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
+	fuego.Post(s, "/login", h.Login)
+	fuego.Post(s, "/users", h.CreateUser)
+	
+	userRoutes := fuego.Group(s, "/users")
+	fuego.Get(userRoutes, "/s", h.ListUser)
+	fuego.Get(userRoutes, "/{id}", h.GetUser)
+
+	authGroup := fuego.Group(s, "")
+	fuego.Use(authGroup, authmw)
+
+	// Use option.Security to tell Swagger this specific route needs the token
+	fuego.Delete(authGroup, "/users/{id}", h.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
+
 }
 
 // 1. CreateUser (STAYS THE SAME - This one uses a Body)
