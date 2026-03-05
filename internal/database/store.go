@@ -3,6 +3,9 @@ package database
 import (
 	// "context"
 
+	"context"
+	"fmt"
+
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -27,4 +30,24 @@ func NewStore(pool *pgxpool.Pool) *SQLStore {
 		pool:    pool,
 		Queries: db.New(pool),
 	}
+}
+
+func (s *SQLStore) ExecTx(ctx context.Context, fn func(*db.Queries) error) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Create a new Query instance using the transaction
+	q := db.New(tx) 
+	err = fn(q)
+	
+	if err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+		}
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
