@@ -23,7 +23,7 @@ func (h Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) h
 	fuego.Post(s, "/users", h.CreateUser)
 	
 	userRoutes := fuego.Group(s, "/users")
-	fuego.Get(userRoutes, "/s", h.ListUser)
+	fuego.Get(userRoutes, "/", h.ListUser)
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
 
 	authGroup := fuego.Group(s, "")
