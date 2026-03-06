@@ -31,7 +31,7 @@ func main() {
 	userHandler := user.NewHandler(userService)
 
 	s := fuego.NewServer(
-		fuego.WithAddr("0.0.0.0:8080"),
+		
 		// This EXACT block fixes the compiler error by using the expected openapi3 types
 		fuego.WithSecurity(openapi3.SecuritySchemes{
 			"bearerAuth": &openapi3.SecuritySchemeRef{
@@ -39,9 +39,9 @@ func main() {
 			},
 		}),
 	)
-	fuego.Use(s, middleware.LoggerMiddleware)
 	fuego.Use(s, middleware.CorsMiddleware)
 	fuego.Use(s, middleware.RequestIdMiddleWare)
+	fuego.Use(s, middleware.LoggerMiddleware)
 
 	fuego.Get(s, "/health", func(c fuego.ContextNoBody) (string, error) {
 
