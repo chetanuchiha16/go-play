@@ -1,15 +1,32 @@
-// internal/erros/maperrors.go
 package errors
 
-import "github.com/go-fuego/fuego"
+import (
+	"fmt"
+	"net/http"
 
-func MapError(err error) error {
+	"github.com/go-fuego/fuego"
+)
+
+// MapError translates internal errors into clean API responses.
+// 'res' is the name of the thing that wasn't found (e.g., "User").
+func MapError(err error, res string) error {
 	if err == nil {
 		return nil
 	}
-	// Logic: If the DB says 'no rows', we tell the user 'Not Found'
+
+	// Check for the specific database "not found" error
 	if err.Error() == "no rows in result set" {
-		return fuego.NotFoundError{Title: "Resource not found"}
+		return fuego.HTTPError{
+			Status: http.StatusNotFound,
+			Title:  fmt.Sprintf("%s not found", res),
+			Detail: fmt.Sprintf("The requested %s does not exist in our records.", res),
+		}
 	}
-	return fuego.InternalServerError{Title: "Internal Server Error", Detail: err.Error()}
+
+	// Default to 500 for everything else
+	return fuego.HTTPError{
+		Status: http.StatusInternalServerError,
+		Title:  "Internal Server Error",
+		Detail: err.Error(),
+	}
 }
