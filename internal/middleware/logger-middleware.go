@@ -1,14 +1,11 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -39,17 +36,6 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) { // our handler calls t
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
 }
-
-func RequestIdMiddleWare(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		request_id := fmt.Sprintf("%d", time.Now().UnixNano())
-		ctx := context.WithValue(r.Context(), "request_id", request_id) // take request context and store in our context
-		w.Header().Set("X-Request-ID", request_id)
-		next.ServeHTTP(w, r.WithContext(ctx)) // now take our updated context and put it back to requst context
-	})
-}
-
 func LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { //HadleFunc is of type func, this is a type conversion so it satisfy the interface and can call ServeHttp method
 		start := time.Now()
@@ -86,29 +72,5 @@ func LoggerMiddleware(next http.Handler) http.Handler {
 				coloredStatus,
 				time.Since(start),
 			)
-	})
-}
-
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Authorisation header required", http.StatusUnauthorized)
-			return
-		}
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "Invalid authorisation format", http.StatusUnauthorized)
-			return
-		}
-
-		claims, err := user.ValidateToken(parts[1])
-		if err != nil {
-			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
-			return // do not forget to return after hitting errors
-		}
-		ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
-		next.ServeHTTP(w, r.WithContext(ctx))
-
 	})
 }
