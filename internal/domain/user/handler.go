@@ -36,7 +36,7 @@ func (h Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) h
 }
 
 // 1. CreateUser (STAYS THE SAME - This one uses a Body)
-func (h *Handler) CreateUser(c fuego.ContextWithBody[db.CreateUserParams]) (db.User, error) {
+func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (db.User, error) {
 	body, err := c.Body()
 	if err != nil {
 		return db.User{}, err
