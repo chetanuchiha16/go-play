@@ -39,9 +39,9 @@ func main() {
 			},
 		}),
 	)
+	fuego.Use(s, middleware.LoggerMiddleware)
 	fuego.Use(s, middleware.CorsMiddleware)
 	fuego.Use(s, middleware.RequestIdMiddleWare)
-	fuego.Use(s, middleware.LoggerMiddleware)
 
 	fuego.Get(s, "/health", func(c fuego.ContextNoBody) (string, error) {
 
