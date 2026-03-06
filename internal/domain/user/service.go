@@ -11,7 +11,7 @@ import (
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, args db.CreateUserParams) (db.User, error)
+	CreateUser(ctx context.Context, args CreateUserShema) (db.User, error)
 	GetUser(ctx context.Context, id int64) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context) ([]db.User, error)
@@ -28,10 +28,10 @@ func NewService(s database.Store) *userService {
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, args db.CreateUserParams) (db.User, error) {
-	password_hash, err := bcrypt.GenerateFromPassword([]byte(args.PasswordHash), bcrypt.DefaultCost)
+func (s *userService) CreateUser(ctx context.Context, args CreateUserShema) (db.User, error) {
+	password_hash, err := bcrypt.GenerateFromPassword([]byte(args.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatal("error making hash")
+		log.Println("error making hash")
 		return db.User{}, err
 	}
 	// args = db.CreateUserParams{
@@ -40,8 +40,10 @@ func (s *userService) CreateUser(ctx context.Context, args db.CreateUserParams) 
 	// 	PasswordHash : string(password_hash),
 
 	// }
-	args.PasswordHash = string(password_hash)
-	return s.store.CreateUser(ctx, args)
+
+	user := db.CreateUserParams{Name: args.Name, PasswordHash: string(password_hash), Email: args.Email}
+	// args.PasswordHash = string(password_hash)
+	return s.store.CreateUser(ctx, user)
 }
 
 func (s *userService) GetUser(ctx context.Context, id int64) (db.User, error) {
