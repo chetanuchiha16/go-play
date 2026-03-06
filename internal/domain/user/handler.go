@@ -5,6 +5,7 @@ import (
 	"strconv" // To convert the ID string to an int64
 
 	"github.com/chetanuchiha16/go-play/db"
+	"github.com/chetanuchiha16/go-play/internal/errors"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
@@ -21,7 +22,7 @@ func NewHandler(s Service) *Handler {
 func (h Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
 	fuego.Post(s, "/login", h.Login)
 	fuego.Post(s, "/users", h.CreateUser)
-	
+
 	userRoutes := fuego.Group(s, "/users")
 	fuego.Get(userRoutes, "/", h.ListUser)
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
@@ -47,11 +48,11 @@ func (h *Handler) CreateUser(c fuego.ContextWithBody[db.CreateUserParams]) (db.U
 func (h *Handler) GetUser(c fuego.ContextNoBody) (db.User, error) {
 	// Fuego gives you path parameters as strings
 	idStr := c.PathParam("id")
-	
+
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return db.User{}, err // Fuego will turn this into a 400 Bad Request automatically
+		return db.User{}, errors.MapError(err) // Fuego will turn this into a 400 Bad Request automatically
 	}
 
 	return h.service.GetUser(c.Context(), id)
@@ -69,8 +70,9 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 
 	err := h.service.DeleteUser(c.Context(), id)
 	if err != nil {
-		return nil, err
+		return nil, errors.MapError(err)
 	}
+
 	return map[string]string{"message": "user deleted"}, nil
 }
 
@@ -82,23 +84,23 @@ type LoginRequest struct {
 
 // Use the LoginResponse struct instead of map[string]string
 func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, error) {
-    body, _ := c.Body()
-    user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
-    if err != nil {
-        return LoginResponse{}, fuego.UnauthorizedError{
-			Title: "you are not a user, please register",
+	body, _ := c.Body()
+	user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
+	if err != nil {
+		return LoginResponse{}, fuego.UnauthorizedError{
+			Title:  "you are not a user, please register",
 			Detail: err.Error(),
 		}
-    }
+	}
 
-    // Return a structured response that Swagger can read
-    return LoginResponse{
-        Token: token,
-        User: UserResponse{
-            ID:        user.ID,
-            Name:      user.Name,
-            Email:     user.Email,
-            CreatedAt: user.CreatedAt,
-        },
-    }, nil
+	// Return a structured response that Swagger can read
+	return LoginResponse{
+		Token: token,
+		User: UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+		},
+	}, nil
 }
