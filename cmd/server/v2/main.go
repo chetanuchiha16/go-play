@@ -39,7 +39,7 @@ func main() {
 			},
 		}),
 	)
-
+	fuego.Use(s,middleware.CorsMiddleware)
 	fuego.Use(s, middleware.RequestIdMiddleWare)
 	fuego.Use(s, middleware.LoggerMiddleware)
 
