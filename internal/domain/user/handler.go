@@ -85,11 +85,6 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	return map[string]string{"message": "user deleted"}, nil
 }
 
-// 5. Login (STAYS THE SAME - This one uses a Body)
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 // Use the LoginResponse struct instead of map[string]string
 func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, error) {
