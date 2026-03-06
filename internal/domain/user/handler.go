@@ -52,15 +52,24 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (db.User, error) {
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return db.User{}, errors.MapError(err) // Fuego will turn this into a 400 Bad Request automatically
+		return db.User{}, err // Fuego will turn this into a 400 Bad Request automatically
 	}
 
-	return h.service.GetUser(c.Context(), id)
+	user, err := h.service.GetUser(c.Context(), id)
+	if err != nil {
+		return db.User{}, errors.MapError(err, idStr)
+	}
+
+	return user, nil
 }
 
 // 3. ListUser (STAYS THE SAME)
 func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.User, error) {
-	return h.service.ListUsers(c.Context())
+	users, err := h.service.ListUsers(c.Context())
+	if err != nil {
+		return []db.User{}, errors.MapError(err, "users")
+	}
+	return users, nil
 }
 
 // 4. DeleteUser (UPDATED: Use ContextNoBody)
@@ -70,7 +79,7 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 
 	err := h.service.DeleteUser(c.Context(), id)
 	if err != nil {
-		return nil, errors.MapError(err)
+		return nil, errors.MapError(err, idStr)
 	}
 
 	return map[string]string{"message": "user deleted"}, nil
