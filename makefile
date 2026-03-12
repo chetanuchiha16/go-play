@@ -33,3 +33,6 @@ down:
 # Clean up binaries
 clean:
 	rm -rf bin/
+
+mock:
+	mockery
