@@ -1,0 +1,36 @@
+package user_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/chetanuchiha16/go-play/db"
+	"github.com/chetanuchiha16/go-play/internal/domain/user"
+	"github.com/chetanuchiha16/go-play/pkg/mocks"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestCreateUser(t *testing.T) {
+	mockUserStore := mocks.NewMockUserStore(t)
+	mockUserStore.On("CreateUser", mock.Anything, mock.Anything).Return(db.User{
+		ID:           1,
+		Name:         "Chetan Kishor",
+		PasswordHash: ";ajdfjaodja",
+		Email:        "chetan16ck@gmail.com",
+		CreatedAt:    pgtype.Timestamptz{},
+	}, nil)
+	userService := user.NewService(mockUserStore)
+	args := user.CreateUserShema{
+		Name:     "Chetan Kishor",
+		Email:    "chetan16ck@gmail.com",
+		Password: "password",
+	}
+
+	user, err := userService.CreateUser(context.Background(), args)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, args.Password, user.PasswordHash)
+
+}
