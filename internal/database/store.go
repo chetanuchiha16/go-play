@@ -10,15 +10,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Store interface {
-	// GetUser(ctx context.Context, id int64) (db.User, error)
-	// CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
-	// DeleteUser(ctx context.Context, id int64) error
-	// ListUsers(ctx context.Context) ([]db.User, error)
-	// GetUserByEmail(ctx context.Context, email string) (db.User, error)
+// type Store interface {
+// 	// GetUser(ctx context.Context, id int64) (db.User, error)
+// 	// CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
+// 	// DeleteUser(ctx context.Context, id int64) error
+// 	// ListUsers(ctx context.Context) ([]db.User, error)
+// 	// GetUserByEmail(ctx context.Context, email string) (db.User, error)
 
-	db.Querier
-}
+// 	db.Querier
+// }
 
 type SQLStore struct {
 	pool        *pgxpool.Pool
