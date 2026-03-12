@@ -2,12 +2,13 @@
 // github.com/vektra/mockery
 // template: testify
 
-package user
+package mocks
 
 import (
 	"context"
 
 	"github.com/chetanuchiha16/go-play/db"
+	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,7 +40,7 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // CreateUser provides a mock function for the type MockService
-func (_mock *MockService) CreateUser(ctx context.Context, args CreateUserShema) (db.User, error) {
+func (_mock *MockService) CreateUser(ctx context.Context, args user.CreateUserShema) (db.User, error) {
 	ret := _mock.Called(ctx, args)
 
 	if len(ret) == 0 {
@@ -48,15 +49,15 @@ func (_mock *MockService) CreateUser(ctx context.Context, args CreateUserShema) 
 
 	var r0 db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, CreateUserShema) (db.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.CreateUserShema) (db.User, error)); ok {
 		return returnFunc(ctx, args)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, CreateUserShema) db.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.CreateUserShema) db.User); ok {
 		r0 = returnFunc(ctx, args)
 	} else {
 		r0 = ret.Get(0).(db.User)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, CreateUserShema) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, user.CreateUserShema) error); ok {
 		r1 = returnFunc(ctx, args)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +72,20 @@ type MockService_CreateUser_Call struct {
 
 // CreateUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - args CreateUserShema
+//   - args user.CreateUserShema
 func (_e *MockService_Expecter) CreateUser(ctx interface{}, args interface{}) *MockService_CreateUser_Call {
 	return &MockService_CreateUser_Call{Call: _e.mock.On("CreateUser", ctx, args)}
 }
 
-func (_c *MockService_CreateUser_Call) Run(run func(ctx context.Context, args CreateUserShema)) *MockService_CreateUser_Call {
+func (_c *MockService_CreateUser_Call) Run(run func(ctx context.Context, args user.CreateUserShema)) *MockService_CreateUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 CreateUserShema
+		var arg1 user.CreateUserShema
 		if args[1] != nil {
-			arg1 = args[1].(CreateUserShema)
+			arg1 = args[1].(user.CreateUserShema)
 		}
 		run(
 			arg0,
@@ -94,12 +95,12 @@ func (_c *MockService_CreateUser_Call) Run(run func(ctx context.Context, args Cr
 	return _c
 }
 
-func (_c *MockService_CreateUser_Call) Return(user db.User, err error) *MockService_CreateUser_Call {
-	_c.Call.Return(user, err)
+func (_c *MockService_CreateUser_Call) Return(user1 db.User, err error) *MockService_CreateUser_Call {
+	_c.Call.Return(user1, err)
 	return _c
 }
 
-func (_c *MockService_CreateUser_Call) RunAndReturn(run func(ctx context.Context, args CreateUserShema) (db.User, error)) *MockService_CreateUser_Call {
+func (_c *MockService_CreateUser_Call) RunAndReturn(run func(ctx context.Context, args user.CreateUserShema) (db.User, error)) *MockService_CreateUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -217,8 +218,8 @@ func (_c *MockService_GetUser_Call) Run(run func(ctx context.Context, id int64))
 	return _c
 }
 
-func (_c *MockService_GetUser_Call) Return(user db.User, err error) *MockService_GetUser_Call {
-	_c.Call.Return(user, err)
+func (_c *MockService_GetUser_Call) Return(user1 db.User, err error) *MockService_GetUser_Call {
+	_c.Call.Return(user1, err)
 	return _c
 }
 
@@ -357,8 +358,8 @@ func (_c *MockService_Login_Call) Run(run func(ctx context.Context, email string
 	return _c
 }
 
-func (_c *MockService_Login_Call) Return(user db.User, token string, err error) *MockService_Login_Call {
-	_c.Call.Return(user, token, err)
+func (_c *MockService_Login_Call) Return(user1 db.User, token string, err error) *MockService_Login_Call {
+	_c.Call.Return(user1, token, err)
 	return _c
 }
 
