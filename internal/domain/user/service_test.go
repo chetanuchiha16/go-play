@@ -31,6 +31,8 @@ func TestCreateUser(t *testing.T) {
 	user, err := userService.CreateUser(context.Background(), args)
 
 	assert.NoError(t, err)
+	assert.Equal(t, args.Name, user.Name)
 	assert.NotEqual(t, args.Password, user.PasswordHash)
-
+	
+	mockUserStore.AssertExpectations(t)
 }
