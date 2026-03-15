@@ -33,6 +33,30 @@ func TestCreateUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, args.Name, user.Name)
 	assert.NotEqual(t, args.Password, user.PasswordHash)
-	
+
 	mockUserStore.AssertExpectations(t)
+}
+
+func TestGetUser(t *testing.T) {
+	mockUserStore := mocks.NewMockUserStore(t)
+	mockUserStore.On("GetUser", mock.Anything, int64(1)).Return(db.User{
+		ID:           1,
+		Name:         "Chetan Kishor",
+		PasswordHash: ";ajdfjaodja",
+		Email:        "chetan16ck@gmail.com",
+		CreatedAt:    pgtype.Timestamptz{},
+	}, nil)
+
+	userService := user.NewService(mockUserStore)
+	resultUser := db.User{
+		ID:           1,
+		Name:         "Chetan Kishor",
+		PasswordHash: ";ajdfjaodja",
+		Email:        "chetan16ck@gmail.com",
+		CreatedAt:    pgtype.Timestamptz{},
+	}
+	user, err := userService.GetUser(context.Background(), 1)
+
+	assert.NoError(t, err)
+	assert.Equal(t, user, resultUser)
 }
