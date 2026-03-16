@@ -60,3 +60,14 @@ func TestGetUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, user, resultUser)
 }
+
+func TestDeleteUser(t *testing.T) {
+	mockStore := mocks.NewMockUserStore(t)
+	mockStore.On("DeleteUser", mock.Anything, int64(1)).Return(nil)
+
+	userService := user.NewService(mockStore)
+
+	err := userService.DeleteUser(context.Background(), 1)
+
+	assert.NoError(t, err)
+}
