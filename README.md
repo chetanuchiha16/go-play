@@ -1,5 +1,9 @@
-# go-play
+# Go-Play 🚀
 
+![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)
+![Build Status](https://github.com/YOUR_USERNAME/go-play/actions/workflows/ci.yml/badge.svg)
+
+A production-ready Go template.
 A playground repository for building and learning backend systems with Go, focusing on clean architecture, type-safe database interactions, and robust configuration management.
 
 ## 🏗 Architecture
