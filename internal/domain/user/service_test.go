@@ -2,6 +2,7 @@ package user_test
 
 import (
 	"context"
+	// "fmt"
 	"testing"
 
 	"github.com/chetanuchiha16/go-play/db"
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -96,4 +98,28 @@ func TestListUsers(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, dbUsers, users)
+}
+
+func TestLogin(t *testing.T) {
+	mockStore := mocks.NewMockUserStore(t)
+	password := ";ajdfjaodja"
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	expUser := db.User{
+		ID:           1,
+		Name:         "Chetan Kishor",
+		PasswordHash: string(hash),
+		Email:        "abcd@gmail.com",
+		CreatedAt:    pgtype.Timestamptz{},
+	}
+	mockStore.On("GetUserByEmail", mock.Anything, "abcd@gmail.com").Return(expUser, nil)
+
+	userService := user.NewUserService(mockStore)
+	user, token, err := userService.Login(t.Context(), "abcd@gmail.com", ";ajdfjaodja")
+
+	assert.NoError(t, err)
+	assert.Equal(t, expUser.ID, user.ID)
+	assert.Equal(t, expUser, user)
+	assert.NotNil(t, token)
+	// fmt.Print(token)
+
 }
