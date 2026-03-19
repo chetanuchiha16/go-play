@@ -36,3 +36,11 @@ clean:
 
 mock:
 	mockery
+
+# Run all tests in the project
+test:
+	go test -v ./...
+
+# Ensure all dependencies are in sync
+tidy:
+	go mod tidy
