@@ -1,6 +1,5 @@
 # Go-Play 🚀
 
-![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen)
 ![Build Status](https://github.com/chetanuchiha16/go-play/actions/workflows/ci.yml/badge.svg)
 
 A production-ready Go template.
