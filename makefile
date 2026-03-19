@@ -44,3 +44,8 @@ test:
 # Ensure all dependencies are in sync
 tidy:
 	go mod tidy
+
+# Generate test coverage report
+test-cover:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
