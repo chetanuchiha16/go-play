@@ -9,7 +9,7 @@ import (
 	"github.com/chetanuchiha16/go-play/db"
 )
 
-type Service interface {
+type UserService interface {
 	CreateUser(ctx context.Context, args CreateUserShema) (db.User, error)
 	GetUser(ctx context.Context, id int64) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
@@ -21,7 +21,7 @@ type userService struct {
 	store UserStore
 }
 
-func NewService(s UserStore) *userService {
+func NewUserService(s UserStore) *userService {
 	return &userService{
 		store: s,
 	}

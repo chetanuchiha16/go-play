@@ -25,10 +25,10 @@ func main() {
 		log.Fatal("error connecting to the db")
 	}
 	defer pool.Close()
+	store := database.NewStore(pool)
 
-	userStore := database.NewStore(pool)
-	userService := user.NewService(userStore)
-	userHandler := user.NewHandler(userService)
+	userService := user.NewUserService(store)
+	userHandler := user.NewUserHandler(userService)
 
 	s := fuego.NewServer(
 		

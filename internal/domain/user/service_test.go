@@ -21,7 +21,7 @@ func TestCreateUser(t *testing.T) {
 		Email:        "chetan16ck@gmail.com",
 		CreatedAt:    pgtype.Timestamptz{},
 	}, nil)
-	userService := user.NewService(mockUserStore)
+	userService := user.NewUserService(mockUserStore)
 	args := user.CreateUserShema{
 		Name:     "Chetan Kishor",
 		Email:    "chetan16ck@gmail.com",
@@ -47,7 +47,7 @@ func TestGetUser(t *testing.T) {
 		CreatedAt:    pgtype.Timestamptz{},
 	}, nil)
 
-	userService := user.NewService(mockUserStore)
+	userService := user.NewUserService(mockUserStore)
 	resultUser := db.User{
 		ID:           1,
 		Name:         "Chetan Kishor",
@@ -65,7 +65,7 @@ func TestDeleteUser(t *testing.T) {
 	mockStore := mocks.NewMockUserStore(t)
 	mockStore.On("DeleteUser", mock.Anything, int64(1)).Return(nil)
 
-	userService := user.NewService(mockStore)
+	userService := user.NewUserService(mockStore)
 
 	err := userService.DeleteUser(context.Background(), 1)
 
@@ -81,17 +81,17 @@ func TestListUsers(t *testing.T) {
 		Email:        "chetan16ck@gmail.com",
 		CreatedAt:    pgtype.Timestamptz{},
 	},
-	{
-		ID:           2,
-		Name:         "Chetan Kishor",
-		PasswordHash: ";ajwwfjaodja",
-		Email:        "ck1234@gmail.com",
-		CreatedAt:    pgtype.Timestamptz{},
-	},
-}
+		{
+			ID:           2,
+			Name:         "Chetan Kishor",
+			PasswordHash: ";ajwwfjaodja",
+			Email:        "ck1234@gmail.com",
+			CreatedAt:    pgtype.Timestamptz{},
+		},
+	}
 	mockStore.On("ListUsers", mock.Anything).Return(dbUsers, nil)
 
-	userService := user.NewService(mockStore)
+	userService := user.NewUserService(mockStore)
 	users, err := userService.ListUsers(t.Context())
 
 	assert.NoError(t, err)
