@@ -25,3 +25,11 @@ jobs:
       - name: Run Tests
         # Using your makefile command
         run: make test
+      
+      - name: Create Coverage Report
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Go Coverage Badge
+        uses: tj-actions/coverage-badge-go@v2
+        with:
+            filename: coverage.out
