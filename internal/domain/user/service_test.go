@@ -3,12 +3,14 @@ package user_test
 import (
 	"context"
 	"errors"
+
 	// "fmt"
 	"testing"
 
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/pkg/mocks"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -66,7 +68,7 @@ func TestGetUser_Table(t *testing.T) {
             name:          "User Not Found",
             userID:        999,
             mockReturn:    db.User{},
-            mockErr:       errors.New("no rows in result set"),
+            mockErr:       pgx.ErrNoRows,
             wantErr:       true,
             expectedEmail: "",
         },

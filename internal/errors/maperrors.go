@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-fuego/fuego"
+	"github.com/jackc/pgx/v5"
 )
 
 // MapError translates internal errors into clean API responses.
@@ -15,7 +16,7 @@ func MapError(err error, res string) error {
 	}
 
 	// Check for the specific database "not found" error
-	if err.Error() == "no rows in result set" {
+	if err.Error() == pgx.ErrNoRows.Error() {
 		return fuego.HTTPError{
 			Status: http.StatusNotFound,
 			Title:  fmt.Sprintf("%s not found", res),
