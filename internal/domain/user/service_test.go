@@ -2,6 +2,7 @@ package user_test
 
 import (
 	"context"
+	"errors"
 	// "fmt"
 	"testing"
 
@@ -39,28 +40,69 @@ func TestCreateUser(t *testing.T) {
 	mockUserStore.AssertExpectations(t)
 }
 
-func TestGetUser(t *testing.T) {
-	mockUserStore := mocks.NewMockUserStore(t)
-	mockUserStore.On("GetUser", mock.Anything, int64(1)).Return(db.User{
-		ID:           1,
-		Name:         "Chetan Kishor",
-		PasswordHash: ";ajdfjaodja",
-		Email:        "chetan16ck@gmail.com",
-		CreatedAt:    pgtype.Timestamptz{},
-	}, nil)
+func TestGetUser_Table(t *testing.T) {
+    // 1. Define the table structure
+    testcases := []struct {
+        name          string        // Name of the test case
+        userID        int64         // Input
+        mockReturn    db.User       // What the mock should return
+        mockErr       error         // What error the mock should return
+        wantErr       bool          // Do we expect an error?
+        expectedEmail string        // Expected result field
+    }{
+        {
+            name:   "Success",
+            userID: 1,
+            mockReturn: db.User{
+                ID: 1, 
+                Name: "Chetan", 
+                Email: "chetan@example.com",
+            },
+            mockErr:       nil,
+            wantErr:       false,
+            expectedEmail: "chetan@example.com",
+        },
+        {
+            name:          "User Not Found",
+            userID:        999,
+            mockReturn:    db.User{},
+            mockErr:       errors.New("no rows in result set"),
+            wantErr:       true,
+            expectedEmail: "",
+        },
+        {
+            name:          "Database Connection Error",
+            userID:        500,
+            mockReturn:    db.User{},
+            mockErr:       errors.New("connection pool exhausted"),
+            wantErr:       true,
+            expectedEmail: "",
+        },
+    }
 
-	userService := user.NewUserService(mockUserStore)
-	resultUser := db.User{
-		ID:           1,
-		Name:         "Chetan Kishor",
-		PasswordHash: ";ajdfjaodja",
-		Email:        "chetan16ck@gmail.com",
-		CreatedAt:    pgtype.Timestamptz{},
-	}
-	user, err := userService.GetUser(context.Background(), 1)
+    for _, testcase := range testcases {
+        // 2. Run as a sub-test
+        t.Run(testcase.name, func(t *testing.T) {
+            mockStore := mocks.NewMockUserStore(t)
+            
+            // 3. Setup the mock based on the table row
+            mockStore.On("GetUser", mock.Anything, testcase.userID).
+                Return(testcase.mockReturn, testcase.mockErr)
 
-	assert.NoError(t, err)
-	assert.Equal(t, user, resultUser)
+            service := user.NewUserService(mockStore)
+
+            // 4. Execute
+            resUser, err := service.GetUser(context.Background(), testcase.userID)
+
+            // 5. Assertions based on the table row
+            if testcase.wantErr {
+                assert.Error(t, err)
+            } else {
+                assert.NoError(t, err)
+                assert.Equal(t, testcase.expectedEmail, resUser.Email)
+            }
+        })
+    }
 }
 
 func TestDeleteUser(t *testing.T) {
