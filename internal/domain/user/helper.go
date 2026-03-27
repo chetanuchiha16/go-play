@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chetanuchiha16/go-play/internal/config"
+	// "github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtkey = []byte(config.Load().JWT_SECRET)
 
-func GenerateToken(user_id int64) (string, error) {
+
+func GenerateToken(user_id int64, jwtkey []byte) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
 		"exp":     time.Now().Add(24 * time.Hour).Unix(),
@@ -21,7 +21,7 @@ func GenerateToken(user_id int64) (string, error) {
 	return token.SignedString(jwtkey)
 }
 
-func ValidateToken(tokenString string) (jwt.MapClaims, error) {
+func ValidateToken(tokenString string, jwtkey []byte) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method %v", token.Header["alg"])
