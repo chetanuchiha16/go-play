@@ -13,6 +13,7 @@ import (
 
 type Handler struct {
 	service UserService
+
 }
 
 func NewUserHandler(s UserService) *Handler {
@@ -20,7 +21,7 @@ func NewUserHandler(s UserService) *Handler {
 }
 
 func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
-	fuego.Post(s, "/login", h.Login)
+	// fuego.Post(s, "/login", h.Login)
 	fuego.Post(s, "/users", h.CreateUser)
 
 	userRoutes := fuego.Group(s, "/users")
@@ -86,28 +87,4 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	}
 
 	return map[string]string{"message": "user deleted"}, nil
-}
-
-
-// Use the LoginResponse struct instead of map[string]string
-func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, error) {
-	body, err := c.Body()
-	if err != nil {
-		return LoginResponse{}, err
-	}
-	user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
-	if err != nil {
-		return LoginResponse{}, errors.MapError(err, "user")
-	}
-
-	// Return a structured response that Swagger can read
-	return LoginResponse{
-		Token: token,
-		User: UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt,
-		},
-	}, nil
 }
