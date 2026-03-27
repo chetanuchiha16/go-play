@@ -294,8 +294,8 @@ func (_c *MockUserStore_GetUserByEmail_Call) RunAndReturn(run func(ctx context.C
 }
 
 // ListUsers provides a mock function for the type MockUserStore
-func (_mock *MockUserStore) ListUsers(ctx context.Context) ([]db.User, error) {
-	ret := _mock.Called(ctx)
+func (_mock *MockUserStore) ListUsers(ctx context.Context, limit int32) ([]db.User, error) {
+	ret := _mock.Called(ctx, limit)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListUsers")
@@ -303,18 +303,18 @@ func (_mock *MockUserStore) ListUsers(ctx context.Context) ([]db.User, error) {
 
 	var r0 []db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]db.User, error)); ok {
-		return returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int32) ([]db.User, error)); ok {
+		return returnFunc(ctx, limit)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) []db.User); ok {
-		r0 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int32) []db.User); ok {
+		r0 = returnFunc(ctx, limit)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.User)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+		r1 = returnFunc(ctx, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -328,18 +328,24 @@ type MockUserStore_ListUsers_Call struct {
 
 // ListUsers is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockUserStore_Expecter) ListUsers(ctx interface{}) *MockUserStore_ListUsers_Call {
-	return &MockUserStore_ListUsers_Call{Call: _e.mock.On("ListUsers", ctx)}
+//   - limit int32
+func (_e *MockUserStore_Expecter) ListUsers(ctx interface{}, limit interface{}) *MockUserStore_ListUsers_Call {
+	return &MockUserStore_ListUsers_Call{Call: _e.mock.On("ListUsers", ctx, limit)}
 }
 
-func (_c *MockUserStore_ListUsers_Call) Run(run func(ctx context.Context)) *MockUserStore_ListUsers_Call {
+func (_c *MockUserStore_ListUsers_Call) Run(run func(ctx context.Context, limit int32)) *MockUserStore_ListUsers_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
+		var arg1 int32
+		if args[1] != nil {
+			arg1 = args[1].(int32)
+		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -350,7 +356,7 @@ func (_c *MockUserStore_ListUsers_Call) Return(users []db.User, err error) *Mock
 	return _c
 }
 
-func (_c *MockUserStore_ListUsers_Call) RunAndReturn(run func(ctx context.Context) ([]db.User, error)) *MockUserStore_ListUsers_Call {
+func (_c *MockUserStore_ListUsers_Call) RunAndReturn(run func(ctx context.Context, limit int32) ([]db.User, error)) *MockUserStore_ListUsers_Call {
 	_c.Call.Return(run)
 	return _c
 }
