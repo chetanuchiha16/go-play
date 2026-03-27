@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -17,7 +18,8 @@ func MapError(err error, res string) error {
 	}
 
 	// Check for the specific database "not found" error
-	if err.Error() == pgx.ErrNoRows.Error() {
+	// if err.Error() == pgx.ErrNoRows.Error() {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return fuego.HTTPError{
 			Status: http.StatusNotFound,
 			Title:  fmt.Sprintf("%s not found", res),
@@ -25,7 +27,7 @@ func MapError(err error, res string) error {
 		}
 	}
 
-	if err.Error() == bcrypt.ErrMismatchedHashAndPassword.Error() {
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 		return fuego.UnauthorizedError{
 			Status: http.StatusUnauthorized,
 			Title:  "Authentication Failed",
