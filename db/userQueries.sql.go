@@ -83,10 +83,11 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 const listUsers = `-- name: ListUsers :many
 SELECT id, name, password_hash, email, created_at FROM users
 ORDER BY id
+LIMIT $1
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsers)
+func (q *Queries) ListUsers(ctx context.Context, limit int32) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUsers, limit)
 	if err != nil {
 		return nil, err
 	}
