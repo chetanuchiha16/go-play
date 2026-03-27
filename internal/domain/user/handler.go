@@ -75,9 +75,12 @@ func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.User, error) {
 // 4. DeleteUser (UPDATED: Use ContextNoBody)
 func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	idStr := c.PathParam("id")
-	id, _ := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return db.User{}, errors.MapError(err, idStr)
+	}
 
-	err := h.service.DeleteUser(c.Context(), id)
+	err = h.service.DeleteUser(c.Context(), id)
 	if err != nil {
 		return nil, errors.MapError(err, idStr)
 	}
