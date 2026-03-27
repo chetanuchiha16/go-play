@@ -3,6 +3,7 @@ module github.com/chetanuchiha16/go-play
 go 1.25.5
 
 require (
+	github.com/alexliesenfeld/go-swagger-ui v0.0.1-beta.5
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-fuego/fuego v0.19.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
