@@ -15,7 +15,7 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
-	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
+	"github.com/getkin/kin-openapi/openapi3" 
 	"github.com/go-fuego/fuego"
 )
 
@@ -36,7 +36,6 @@ func main() {
 
 	s := fuego.NewServer(
 
-		// This EXACT block fixes the compiler error by using the expected openapi3 types
 		fuego.WithSecurity(openapi3.SecuritySchemes{
 			"bearerAuth": &openapi3.SecuritySchemeRef{
 				Value: openapi3.NewJWTSecurityScheme(),

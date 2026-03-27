@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	// "github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/errors"

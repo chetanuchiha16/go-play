@@ -35,15 +35,9 @@ func (s *userService) CreateUser(ctx context.Context, args CreateUserShema) (db.
 		log.Println("error making hash")
 		return db.User{}, err
 	}
-	// args = db.CreateUserParams{
-	// 	Name : args.Name,
-	// 	Email: args.Email,
-	// 	PasswordHash : string(password_hash),
-
-	// }
+	
 
 	user := db.CreateUserParams{Name: args.Name, PasswordHash: string(password_hash), Email: args.Email}
-	// args.PasswordHash = string(password_hash)
 	return s.store.CreateUser(ctx, user)
 }
 
