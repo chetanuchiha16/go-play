@@ -13,7 +13,7 @@ type UserService interface {
 	CreateUser(ctx context.Context, args CreateUserShema) (db.User, error)
 	GetUser(ctx context.Context, id int64) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
-	ListUsers(ctx context.Context, limit int32) ([]db.User, error)
+	ListUsers(ctx context.Context, limit int32) ([]db.ListUsersRow, error)
 	// Login(ctx context.Context, email, password string) (user db.User, token string, err error)
 }
 
@@ -51,7 +51,7 @@ func (s *userService) DeleteUser(ctx context.Context, id int64) error {
 
 // handler expects something that implements the servide interface
 // making userService implement it
-func (s *userService) ListUsers(ctx context.Context, limit int32) ([]db.User, error) {
+func (s *userService) ListUsers(ctx context.Context, limit int32) ([]db.ListUsersRow, error) {
 	return s.store.ListUsers(ctx, limit)
 }
 

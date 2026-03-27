@@ -67,14 +67,14 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (UserResponse, error) {
 }
 
 // 3. ListUser (STAYS THE SAME)
-func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.User, error) {
+func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.ListUsersRow, error) {
 	limit, err := strconv.ParseInt(c.QueryParam("limit"), 10, 32)
 	if err != nil {
-		return []db.User{}, errors.MapError(err, "limit")
+		return []db.ListUsersRow{}, errors.MapError(err, "limit")
 	}
 	users, err := h.service.ListUsers(c.Context(), int32(limit))
 	if err != nil {
-		return []db.User{}, errors.MapError(err, "users")
+		return []db.ListUsersRow{}, errors.MapError(err, "users")
 	}
 	return users, nil
 }
