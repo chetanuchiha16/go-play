@@ -91,7 +91,10 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 
 // Use the LoginResponse struct instead of map[string]string
 func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, error) {
-	body, _ := c.Body()
+	body, err := c.Body()
+	if err != nil {
+		return LoginResponse{}, err
+	}
 	user, token, err := h.service.Login(c.Context(), body.Email, body.Password)
 	if err != nil {
 		return LoginResponse{}, errors.MapError(err, "user")
