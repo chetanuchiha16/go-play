@@ -19,6 +19,7 @@ type UserService interface {
 
 type userService struct {
 	store UserStore
+	jwtkey []byte
 }
 
 func NewUserService(s UserStore) *userService {
@@ -67,7 +68,7 @@ func (s *userService) Login(ctx context.Context, email, password string) (user d
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return db.User{}, "", err
 	}
-	token, err = GenerateToken(user.ID)
+	token, err = GenerateToken(user.ID, s.jwtkey)
 	if err != nil {
 		return db.User{}, "", err
 	}
