@@ -9,6 +9,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 )
 
 type Handler struct {
@@ -20,10 +21,10 @@ func NewUserHandler(s UserService) *Handler {
 }
 
 func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
-	fuego.Post(s, "/users", h.CreateUser)
 
 	userRoutes := fuego.Group(s, "/users")
-	fuego.Get(userRoutes, "/", h.ListUser)
+	fuego.Post(userRoutes, "/users", h.CreateUser)
+	fuego.Get(userRoutes, "/", h.ListUser, option.QueryInt("limit", "Maximum number of users to return", param.Default(20)))
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
 
 	authGroup := fuego.Group(s, "")

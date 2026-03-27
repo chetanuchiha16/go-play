@@ -41,7 +41,7 @@ func MapError(err error, res string) error {
 
 	var numErr *strconv.NumError
 	if errors.As(err, &numErr) {
-		return fuego.UnauthorizedError{
+		return fuego.HTTPError{
 			Status: http.StatusBadRequest,
 			Title:  "Invalid Path Parameter",
 			Detail: fmt.Sprintf("The value '%s' is not a valid number", numErr.Num),
