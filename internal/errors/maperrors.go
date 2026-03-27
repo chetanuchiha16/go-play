@@ -7,13 +7,19 @@ import (
 	"strconv"
 
 	"github.com/go-fuego/fuego"
+	"github.com/jackc/pgerrcode" // Correct
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
+
 var (
-	ErrInvalidToken          = errors.New("invalid token")
+	ErrInvalidToken            = errors.New("invalid token")
 	ErrUnexpectedSigningMethod = errors.New("unexpected signing method")
+	ErrAlreadyExists           = errors.New("Already Exists")
+	ErrNotFound                = errors.New("Not Found")
 )
+
 // MapError translates internal errors into clean API responses.
 // 'res' is the name of the thing that wasn't found (e.g., "User").
 func MapError(err error, res string) error {
@@ -51,8 +57,21 @@ func MapError(err error, res string) error {
 	if errors.Is(err, bcrypt.ErrPasswordTooLong) {
 		return fuego.UnauthorizedError{
 			Status: http.StatusUnprocessableEntity,
-			Title: "Password too long",
+			Title:  "Password too long",
 			Detail: "password too long",
+		}
+	}
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case pgerrcode.UniqueViolation:
+			return fuego.HTTPError{
+				Status: http.StatusConflict, // 409 is standard for "Already Exists"
+				Title:  "Conflict",
+				Detail: fmt.Sprintf("A %s with this unique identifier already exists.", res),
+			}
+
 		}
 	}
 
