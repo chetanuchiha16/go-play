@@ -72,5 +72,5 @@ func (s authService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 
-	return nil, fmt.Errorf("Invalid token")
+	return nil, errors.ErrInvalidToken
 }
