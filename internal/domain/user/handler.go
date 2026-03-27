@@ -23,7 +23,7 @@ func NewUserHandler(s UserService) *Handler {
 func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
 
 	userRoutes := fuego.Group(s, "/users")
-	fuego.Post(userRoutes, "/users", h.CreateUser)
+	fuego.Post(userRoutes, "/users", h.CreateUser, option.RequestContentType("application/x-www-form-urlencoded"))
 	fuego.Get(userRoutes, "/", h.ListUser, option.QueryInt("limit", "Maximum number of users to return", param.Default(20)))
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
 
