@@ -12,6 +12,7 @@ import (
 
 	"github.com/chetanuchiha16/go-play/internal/config"
 	"github.com/chetanuchiha16/go-play/internal/database"
+	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
 	"github.com/getkin/kin-openapi/openapi3" // The missing import to fix the compiler error
@@ -27,6 +28,9 @@ func main() {
 	defer pool.Close()
 	store := database.NewStore(pool)
 
+	authService := auth.NewAuthService(store, []byte(cfg.JWT_SECRET))
+	authHandler := auth.NewAuthHandler(authService)
+
 	userService := user.NewUserService(store)
 	userHandler := user.NewUserHandler(userService)
 
@@ -40,7 +44,7 @@ func main() {
 		}),
 	)
 
-	mw := middleware.NewMiddlewareManager([]byte(config.Load().JWT_SECRET))
+	mw := middleware.NewMiddlewareManager([]byte(cfg.JWT_SECRET))
 	fuego.Use(s, mw.CorsMiddleware)
 	fuego.Use(s, mw.RequestIdMiddleWare)
 	fuego.Use(s, mw.LoggerMiddleware)
@@ -57,7 +61,7 @@ func main() {
 		}
 		return "OK", nil
 	})
-
+	authHandler.RegisterAuthRoutes(s, mw.AuthMiddleware)
 	userHandler.RegisterUserRoutes(s, mw.AuthMiddleware)
 
 	stop := make(chan os.Signal, 1)
