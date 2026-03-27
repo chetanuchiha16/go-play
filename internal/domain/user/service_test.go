@@ -137,7 +137,7 @@ func TestListUsers(t *testing.T) {
 	mockStore.On("ListUsers", mock.Anything).Return(dbUsers, nil)
 
 	userService := user.NewUserService(mockStore)
-	users, err := userService.ListUsers(t.Context())
+	users, err := userService.ListUsers(t.Context(), 10)
 
 	assert.NoError(t, err)
 	assert.Equal(t, dbUsers, users)
