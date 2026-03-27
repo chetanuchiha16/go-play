@@ -41,6 +41,9 @@ func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (UserResp
 		return UserResponse{}, err
 	}
 	user, err := h.service.CreateUser(c.Context(), body)
+	if err != nil {
+		return UserResponse{}, errors.MapError(err, body.Name)
+	}
 	return NewUserResponse(user), errors.MapError(err, user.Name)
 }
 

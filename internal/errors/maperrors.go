@@ -48,6 +48,14 @@ func MapError(err error, res string) error {
 		}
 	}
 
+	if errors.Is(err, bcrypt.ErrPasswordTooLong) {
+		return fuego.UnauthorizedError{
+			Status: http.StatusUnprocessableEntity,
+			Title: "Password too long",
+			Detail: "password too long",
+		}
+	}
+
 	// Default to 500 for everything else
 	return fuego.HTTPError{
 		Status: http.StatusInternalServerError,
