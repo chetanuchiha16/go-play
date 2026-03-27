@@ -25,6 +25,7 @@ func openApiHandler(specURL string) http.Handler {
 	return swaggerui.NewHandler(
 		swaggerui.WithSpecURL(specURL),
 		swaggerui.WithPersistAuthorization(true),
+		swaggerui.WithTryItOutEnabled(true),
 	)
 }
 

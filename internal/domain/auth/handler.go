@@ -6,6 +6,7 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/errors"
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 )
 
 type Handler struct {
@@ -20,7 +21,7 @@ func NewAuthHandler(service AuthService) *Handler {
 
 func (h *Handler) RegisterAuthRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
 	authRoutes := fuego.Group(s, "/auth")
-	fuego.Post(authRoutes, "/login", h.Login)
+	fuego.Post(authRoutes, "/login", h.Login, option.RequestContentType("application/x-www-form-urlencoded"))
 }
 
 // Use the LoginResponse struct instead of map[string]string
