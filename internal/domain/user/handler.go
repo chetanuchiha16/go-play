@@ -13,7 +13,6 @@ import (
 
 type Handler struct {
 	service UserService
-
 }
 
 func NewUserHandler(s UserService) *Handler {
@@ -37,31 +36,32 @@ func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) 
 }
 
 // 1. CreateUser (STAYS THE SAME - This one uses a Body)
-func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (db.User, error) {
+func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (UserResponse, error) {
 	body, err := c.Body()
 	if err != nil {
-		return db.User{}, err
+		return UserResponse{}, err
 	}
-	return h.service.CreateUser(c.Context(), body)
+	user, err := h.service.CreateUser(c.Context(), body)
+	return NewUserResponse(user), errors.MapError(err, user.Name)
 }
 
 // 2. GetUser (UPDATED: Use ContextNoBody)
-func (h *Handler) GetUser(c fuego.ContextNoBody) (db.User, error) {
+func (h *Handler) GetUser(c fuego.ContextNoBody) (UserResponse, error) {
 	// Fuego gives you path parameters as strings
 	idStr := c.PathParam("id")
 
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return db.User{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
+		return UserResponse{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
 	}
 
 	user, err := h.service.GetUser(c.Context(), id)
 	if err != nil {
-		return db.User{}, errors.MapError(err, idStr)
+		return UserResponse{}, errors.MapError(err, idStr)
 	}
 
-	return user, nil
+	return NewUserResponse(user), nil
 }
 
 // 3. ListUser (STAYS THE SAME)

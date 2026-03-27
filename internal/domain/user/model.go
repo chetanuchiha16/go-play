@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/chetanuchiha16/go-play/db"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -19,4 +20,13 @@ type UserResponse struct {
 	Name      string             `json:"name"`
 	Email     string             `json:"email"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+func NewUserResponse(user db.User) UserResponse{
+	return UserResponse{
+		user.ID,
+		user.Name,
+		user.Email,
+		user.CreatedAt,
+	}
 }
