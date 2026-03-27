@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/chetanuchiha16/go-play/pkg"
 )
 
-type contextKey string
 
-const user_id contextKey = "user_id"
+
+const user_id pkg.ContextKey = "user_id"
 
 func (s authService) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
