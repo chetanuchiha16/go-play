@@ -61,8 +61,8 @@ func main() {
 		}
 		return "OK", nil
 	})
-	authHandler.RegisterAuthRoutes(s, mw.AuthMiddleware)
-	userHandler.RegisterUserRoutes(s, mw.AuthMiddleware)
+	authHandler.RegisterAuthRoutes(s, authService.AuthMiddleware)
+	userHandler.RegisterUserRoutes(s, authService.AuthMiddleware)
 
 	stop := make(chan os.Signal, 1)
 	go func() {

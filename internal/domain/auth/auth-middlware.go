@@ -1,18 +1,17 @@
-package middleware
+package auth
 
 import (
 	"context"
 	"net/http"
 	"strings"
 
-	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 )
 
 type contextKey string
 
 const user_id contextKey = "user_id"
 
-func (mw MiddlewareManager) AuthMiddleware(next http.Handler) http.Handler {
+func (s authService) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -25,7 +24,7 @@ func (mw MiddlewareManager) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		claims, err := auth.ValidateToken(parts[1], mw.jwtkey)
+		claims, err := s.ValidateToken(parts[1])
 		if err != nil {
 			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 			return // do not forget to return after hitting errors
