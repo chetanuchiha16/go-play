@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -81,24 +83,30 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, password_hash, email, created_at FROM users
+SELECT id, name, email, created_at FROM users
 ORDER BY id
 LIMIT $1
 `
 
-func (q *Queries) ListUsers(ctx context.Context, limit int32) ([]User, error) {
+type ListUsersRow struct {
+	ID        int64              `json:"id"`
+	Name      string             `json:"name"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, limit int32) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ListUsersRow
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.PasswordHash,
 			&i.Email,
 			&i.CreatedAt,
 		); err != nil {
