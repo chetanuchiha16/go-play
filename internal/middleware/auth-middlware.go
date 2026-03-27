@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/chetanuchiha16/go-play/internal/domain/user"
+	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 )
 
 type contextKey string
@@ -25,7 +25,7 @@ func (mw MiddlewareManager) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		claims, err := user.ValidateToken(parts[1], mw.jwtkey)
+		claims, err := auth.ValidateToken(parts[1], mw.jwtkey)
 		if err != nil {
 			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 			return // do not forget to return after hitting errors
