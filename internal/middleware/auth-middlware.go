@@ -9,9 +9,10 @@ import (
 )
 
 type contextKey string
-const  user_id contextKey = "user_id"
 
-func AuthMiddleware(next http.Handler) http.Handler {
+const user_id contextKey = "user_id"
+
+func (mw MiddlewareManager) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -24,7 +25,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		claims, err := user.ValidateToken(parts[1])
+		claims, err := user.ValidateToken(parts[1], mw.jwtkey)
 		if err != nil {
 			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
 			return // do not forget to return after hitting errors
