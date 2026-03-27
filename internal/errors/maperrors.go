@@ -10,7 +10,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
-
+var (
+	ErrInvalidToken          = errors.New("invalid token")
+	ErrUnexpectedSigningMethod = errors.New("unexpected signing method")
+)
 // MapError translates internal errors into clean API responses.
 // 'res' is the name of the thing that wasn't found (e.g., "User").
 func MapError(err error, res string) error {
