@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,9 +16,40 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
-	"github.com/getkin/kin-openapi/openapi3" 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
 )
+
+// openApiHandler returns a Swagger UI 5.x handler that supports OpenAPI 3.1.0
+func openApiHandler(specURL string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		html := strings.ReplaceAll(swaggerUIHTML, "{{.SpecURL}}", specURL)
+		w.Write([]byte(html))
+	})
+}
+
+const swaggerUIHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({
+      url: "{{.SpecURL}}",
+      dom_id: '#swagger-ui',
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+      layout: "BaseLayout",
+      persistAuthorization: true,
+    });
+  </script>
+</body>
+</html>`
 
 func main() {
 	cfg := config.Load()
@@ -41,6 +73,12 @@ func main() {
 				Value: openapi3.NewJWTSecurityScheme(),
 			},
 		}),
+
+		fuego.WithEngineOptions(
+			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
+				UIHandler: openApiHandler,
+			}),
+		),
 	)
 
 	mw := middleware.NewMiddlewareManager()
