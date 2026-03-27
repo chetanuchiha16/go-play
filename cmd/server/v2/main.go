@@ -31,7 +31,7 @@ func main() {
 	userHandler := user.NewUserHandler(userService)
 
 	s := fuego.NewServer(
-		
+
 		// This EXACT block fixes the compiler error by using the expected openapi3 types
 		fuego.WithSecurity(openapi3.SecuritySchemes{
 			"bearerAuth": &openapi3.SecuritySchemeRef{
@@ -39,9 +39,11 @@ func main() {
 			},
 		}),
 	)
-	fuego.Use(s, middleware.CorsMiddleware)
-	fuego.Use(s, middleware.RequestIdMiddleWare)
-	fuego.Use(s, middleware.LoggerMiddleware)
+
+	mw := middleware.NewMiddlewareManager([]byte(config.Load().JWT_SECRET))
+	fuego.Use(s, mw.CorsMiddleware)
+	fuego.Use(s, mw.RequestIdMiddleWare)
+	fuego.Use(s, mw.LoggerMiddleware)
 
 	fuego.Get(s, "/health", func(c fuego.ContextNoBody) (string, error) {
 
@@ -56,7 +58,7 @@ func main() {
 		return "OK", nil
 	})
 
-	userHandler.RegisterUserRoutes(s, middleware.AuthMiddleware)
+	userHandler.RegisterUserRoutes(s, mw.AuthMiddleware)
 
 	stop := make(chan os.Signal, 1)
 	go func() {
