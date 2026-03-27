@@ -44,7 +44,7 @@ func main() {
 		}),
 	)
 
-	mw := middleware.NewMiddlewareManager([]byte(cfg.JWT_SECRET))
+	mw := middleware.NewMiddlewareManager()
 	fuego.Use(s, mw.CorsMiddleware)
 	fuego.Use(s, mw.RequestIdMiddleWare)
 	fuego.Use(s, mw.LoggerMiddleware)
