@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // MapError translates internal errors into clean API responses.
@@ -21,6 +22,14 @@ func MapError(err error, res string) error {
 			Status: http.StatusNotFound,
 			Title:  fmt.Sprintf("%s not found", res),
 			Detail: fmt.Sprintf("The requested %s does not exist in our records.", res),
+		}
+	}
+
+	if err.Error() == bcrypt.ErrMismatchedHashAndPassword.Error() {
+		return fuego.UnauthorizedError{
+			Status: http.StatusUnauthorized,
+			Title:  "Authentication Failed",
+			Detail: "Incorrect Password",
 		}
 	}
 
