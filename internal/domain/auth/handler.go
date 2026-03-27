@@ -37,11 +37,6 @@ func (h *Handler) Login(c fuego.ContextWithBody[LoginRequest]) (LoginResponse, e
 	// Return a structured response that Swagger can read
 	return LoginResponse{
 		Token: token,
-		User: user.UserResponse{
-			ID:        _user.ID,
-			Name:      _user.Name,
-			Email:     _user.Email,
-			CreatedAt: _user.CreatedAt,
-		},
+		User: user.NewUserResponse(_user),
 	}, nil
 }
