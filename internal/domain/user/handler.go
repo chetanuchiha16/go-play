@@ -19,7 +19,7 @@ func NewUserHandler(s UserService) *Handler {
 	return &Handler{service: s}
 }
 
-func (h Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
+func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
 	fuego.Post(s, "/login", h.Login)
 	fuego.Post(s, "/users", h.CreateUser)
 
