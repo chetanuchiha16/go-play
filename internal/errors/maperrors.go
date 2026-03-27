@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-fuego/fuego"
 	"github.com/jackc/pgx/v5"
@@ -32,6 +33,15 @@ func MapError(err error, res string) error {
 			Status: http.StatusUnauthorized,
 			Title:  "Authentication Failed",
 			Detail: "Incorrect Password",
+		}
+	}
+
+	var numErr *strconv.NumError
+	if errors.As(err, &numErr) {
+		return fuego.UnauthorizedError{
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Path Parameter",
+			Detail: fmt.Sprintf("The value '%s' is not a valid number", numErr.Num),
 		}
 	}
 

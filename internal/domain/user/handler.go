@@ -52,7 +52,7 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (db.User, error) {
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return db.User{}, err // Fuego will turn this into a 400 Bad Request automatically
+		return db.User{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
 	}
 
 	user, err := h.service.GetUser(c.Context(), id)
