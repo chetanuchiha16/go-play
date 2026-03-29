@@ -119,25 +119,25 @@ func TestDeleteUser(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	mockStore := mocks.NewMockUserStore(t)
-	dbUsers := []db.User{{
+	dbUsers := []db.ListUsersRow{{
 		ID:           1,
 		Name:         "Chetan Kishor",
-		PasswordHash: ";ajdfjaodja",
+		// PasswordHash: ";ajdfjaodja",
 		Email:        "chetan16ck@gmail.com",
 		CreatedAt:    pgtype.Timestamptz{},
 	},
 		{
 			ID:           2,
 			Name:         "Chetan Kishor",
-			PasswordHash: ";ajwwfjaodja",
+			// PasswordHash: ";ajwwfjaodja",
 			Email:        "ck1234@gmail.com",
 			CreatedAt:    pgtype.Timestamptz{},
 		},
 	}
-	mockStore.On("ListUsers", mock.Anything).Return(dbUsers, nil)
+	mockStore.On("ListUsers", mock.Anything, int32(2)).Return(dbUsers, nil)
 
 	userService := user.NewUserService(mockStore)
-	users, err := userService.ListUsers(t.Context(), 10)
+	users, err := userService.ListUsers(t.Context(), int32(2))
 
 	assert.NoError(t, err)
 	assert.Equal(t, dbUsers, users)
