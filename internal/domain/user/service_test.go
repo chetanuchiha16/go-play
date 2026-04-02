@@ -16,29 +16,75 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCreateUser(t *testing.T) {
-	mockUserStore := mocks.NewMockUserStore(t)
-	mockUserStore.On("CreateUser", mock.Anything, mock.Anything).Return(db.User{
-		ID:           1,
-		Name:         "Chetan Kishor",
-		PasswordHash: ";ajdfjaodja",
-		Email:        "chetan16ck@gmail.com",
-		CreatedAt:    pgtype.Timestamptz{},
-	}, nil)
-	userService := user.NewUserService(mockUserStore)
-	args := user.CreateUserShema{
-		Name:     "Chetan Kishor",
-		Email:    "chetan16ck@gmail.com",
-		Password: "password",
+func TestCreateUser_Table(t *testing.T) {
+	// 1. Define the table structure
+	testcases := []struct {
+		name           string               // Name of the test case
+		inputArgs      user.CreateUserShema // Input payload
+		mockReturnUser db.User              // What the mock should return
+		mockReturnErr  error                // What error the mock should return
+		wantErr        bool                 // Do we expect an error?
+	}{
+		{
+			name: "Success",
+			inputArgs: user.CreateUserShema{
+				Name:     "Chetan Kishor",
+				Email:    "chetan16ck@gmail.com",
+				Password: "password",
+			},
+			mockReturnUser: db.User{
+				ID:           1,
+				Name:         "Chetan Kishor",
+				PasswordHash: ";ajdfjaodja", // Simulated hashed password
+				Email:        "chetan16ck@gmail.com",
+				CreatedAt:    pgtype.Timestamptz{},
+			},
+			mockReturnErr: nil,
+			wantErr:       false,
+		},
+		{
+			name: "Database Error - Duplicate Email",
+			inputArgs: user.CreateUserShema{
+				Name:     "Duplicate User",
+				Email:    "chetan16ck@gmail.com",
+				Password: "password123",
+			},
+			mockReturnUser: db.User{},
+			mockReturnErr:  errors.New("unique constraint violation: email already exists"),
+			wantErr:        true,
+		},
 	}
 
-	user, err := userService.CreateUser(context.Background(), args)
+	for _, testcase := range testcases {
+		// 2. Run as a sub-test
+		t.Run(testcase.name, func(t *testing.T) {
+			mockStore := mocks.NewMockUserStore(t)
 
-	assert.NoError(t, err)
-	assert.Equal(t, args.Name, user.Name)
-	assert.NotEqual(t, args.Password, user.PasswordHash)
+			// 3. Setup the mock based on the table row
+			// Using mock.Anything for context and the DB user model passed to the store
+			mockStore.On("CreateUser", mock.Anything, mock.Anything).
+				Return(testcase.mockReturnUser, testcase.mockReturnErr)
 
-	mockUserStore.AssertExpectations(t)
+			service := user.NewUserService(mockStore)
+
+			// 4. Execute
+			resUser, err := service.CreateUser(context.Background(), testcase.inputArgs)
+
+			// 5. Assertions based on the table row
+			if testcase.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testcase.inputArgs.Name, resUser.Name)
+				assert.Equal(t, testcase.inputArgs.Email, resUser.Email)
+				// Ensure the password returned is the hash, not the plain text input
+				assert.NotEqual(t, testcase.inputArgs.Password, resUser.PasswordHash)
+			}
+            
+			// 6. Assert that the mocked method was actually called
+			mockStore.AssertExpectations(t)
+		})
+	}
 }
 
 func TestGetUser_Table(t *testing.T) {
