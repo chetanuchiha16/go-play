@@ -34,6 +34,11 @@ func List[T any](data []T, messages ...string) GenericResponse[[]T] {
 	return Success(http.StatusOK, data, message)
 }
 
-func Deleted() GenericResponse[struct{}] {
-	return Success(http.StatusOK, struct{}{}, "Resource deleted successfully")
+func Deleted(messages ...string) GenericResponse[struct{}] {
+	message := "Resource deleted successfully"
+
+	if len(messages) > 0 {
+		message = messages[0]
+	}
+	return Success(http.StatusOK, struct{}{}, message)
 }

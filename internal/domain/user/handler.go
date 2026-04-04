@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 	"strconv" // To convert the ID string to an int64
 
@@ -49,7 +50,7 @@ func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (response
 	if err != nil {
 		return response.Created(UserResponse{}), errors.MapError(err, body.Name)
 	}
-	return response.Created(NewUserResponse(user)), nil
+	return response.Created(NewUserResponse(user), fmt.Sprintf("User %v", user.Name)), nil
 }
 
 // 2. GetUser (UPDATED: Use ContextNoBody)
@@ -60,15 +61,15 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (response.GenericResponse[UserR
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return response.GenericResponse[UserResponse]{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
+		return response.Detail(UserResponse{}), errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
 	}
 
 	user, err := h.service.GetUser(c.Context(), id)
 	if err != nil {
-		return response.GenericResponse[UserResponse]{}, errors.MapError(err, idStr)
+		return response.Detail(UserResponse{}), errors.MapError(err, idStr)
 	}
 
-	return response.Detail(NewUserResponse(user), "User"), nil
+	return response.Detail(NewUserResponse(user), fmt.Sprintf("User %v", user.Name)), nil
 }
 
 // 3. ListUser (STAYS THE SAME)
@@ -101,5 +102,5 @@ func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
 		return nil, errors.MapError(err, idStr)
 	}
 
-	return map[string]string{"message": "user deleted"}, nil
+	return response.Deleted(fmt.Sprintf("User %v", idStr)), nil
 }
