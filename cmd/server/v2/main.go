@@ -80,9 +80,9 @@ func main() {
 		err := pool.Ping(c.Context())
 		if err != nil {
 			return "Service unavailable", fuego.InternalServerError{
-				Status: http.StatusServiceUnavailable,
-				Detail: err.Error(),
 				Title:  "Database connection failed",
+				Status: http.StatusServiceUnavailable,
+				Detail: "Database unavailable at the moment",
 			}
 		}
 		return "OK", nil
