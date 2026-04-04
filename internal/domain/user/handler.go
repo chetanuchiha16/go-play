@@ -28,11 +28,13 @@ func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) 
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
 
 	//protected routes
-	authGroup := fuego.Group(s, "/users")
+	authGroup := fuego.Group(s, "/users", 
+        option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}),
+    )
 	fuego.Use(authGroup, authmw)
 
 	// Use option.Security to tell Swagger this specific route needs the token
-	fuego.Delete(authGroup, "/{id}", h.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
+	fuego.Delete(authGroup, "/{id}", h.DeleteUser)
 
 }
 
