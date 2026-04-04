@@ -55,8 +55,20 @@ func main() {
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 				UIHandler: openApiHandler,
 			}),
+			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
+				// This overrides the default "Cheatsheet" information
+				Info: &openapi3.Info{
+					Title:       "Go-Play",
+					Version:     "1.0.0",
+					Description: " ", // Use a space or your own custom text
+				},
+			}),
 		),
+
+		
 	)
+
+	// s.OpenAPI.Description() = 
 
 	mw := middleware.NewMiddlewareManager()
 	fuego.Use(s, mw.CorsMiddleware)
