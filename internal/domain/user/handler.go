@@ -40,16 +40,16 @@ func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) 
 }
 
 // 1. CreateUser (STAYS THE SAME - This one uses a Body)
-func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (UserResponse, error) {
+func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (response.GenericResponse[UserResponse], error) {
 	body, err := c.Body()
 	if err != nil {
-		return UserResponse{}, err
+		return response.Created(UserResponse{}), err
 	}
 	user, err := h.service.CreateUser(c.Context(), body)
 	if err != nil {
-		return UserResponse{}, errors.MapError(err, body.Name)
+		return response.Created(UserResponse{}), errors.MapError(err, body.Name)
 	}
-	return NewUserResponse(user), nil
+	return response.Created(NewUserResponse(user)), nil
 }
 
 // 2. GetUser (UPDATED: Use ContextNoBody)
