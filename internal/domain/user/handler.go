@@ -23,15 +23,16 @@ func NewUserHandler(s UserService) *Handler {
 func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
 
 	userRoutes := fuego.Group(s, "/users")
-	fuego.Post(userRoutes, "/users", h.CreateUser, option.RequestContentType("application/x-www-form-urlencoded"))
+	fuego.Post(userRoutes, "/", h.CreateUser, option.RequestContentType("application/x-www-form-urlencoded"))
 	fuego.Get(userRoutes, "/", h.ListUser, option.QueryInt("limit", "Maximum number of users to return", param.Default(20)))
 	fuego.Get(userRoutes, "/{id}", h.GetUser)
 
-	authGroup := fuego.Group(s, "")
+	//protected routes
+	authGroup := fuego.Group(s, "/users")
 	fuego.Use(authGroup, authmw)
 
 	// Use option.Security to tell Swagger this specific route needs the token
-	fuego.Delete(authGroup, "/users/{id}", h.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
+	fuego.Delete(authGroup, "/{id}", h.DeleteUser, option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}))
 
 }
 
