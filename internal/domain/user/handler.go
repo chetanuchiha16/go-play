@@ -72,7 +72,11 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (UserResponse, error) {
 
 // 3. ListUser (STAYS THE SAME)
 func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.ListUsersRow, error) {
-	limit, err := strconv.ParseInt(c.QueryParam("limit"), 10, 32)
+	limitStr := c.QueryParam("limit")
+	if limitStr == "" {
+		limitStr = "3"
+	}
+	limit, err := strconv.ParseInt(limitStr, 10, 32)
 	if err != nil {
 		return []db.ListUsersRow{}, errors.MapError(err, "limit")
 	}
