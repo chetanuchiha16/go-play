@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -79,23 +78,27 @@ func main() {
 	authHandler.RegisterAuthRoutes(s, authService.AuthMiddleware)
 	userHandler.RegisterUserRoutes(s, authService.AuthMiddleware)
 
-	stop := make(chan os.Signal, 1)
 	go func() {
-		log.Println("listening at localhost:8080")
-		s.Run()
-	}()
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	<-stop
-	fmt.Println("kill received")
-	fmt.Println("Shutting down gracefully")
+    if err := s.Run(); err != nil && err != http.ErrServerClosed {
+        log.Fatalf("listen: %s\n", err)
+    }
+}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+// Wait for interrupt signal
+stop := make(chan os.Signal, 1)
+signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+<-stop
 
-	fmt.Println("resource releasing")
-	if err := s.Shutdown(ctx); err != nil {
-		log.Fatalf("forcfully shutting down %v", err)
-	}
-	pool.Close()
+log.Println("Shutting down gracefully...")
+
+// Create context with timeout for shutdown
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+if err := s.Shutdown(ctx); err != nil {
+    log.Fatal("Server forced to shutdown: ", err)
+}
+
+log.Println("Server exiting")
 
 }
