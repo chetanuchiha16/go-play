@@ -6,7 +6,7 @@ type GenericResponse[T any] struct {
 	Status  string      `json:"status"`
 	Message string      `json:"message,omitempty"`
 	Data    *T          `json:"data,omitempty"`
-	Errors  interface{} `json:"errors,omitempty"`
+	Errors  any `json:"errors,omitempty"`
 	Meta    *Meta       `json:"meta,omitempty"`
 }
 
