@@ -14,18 +14,15 @@ type UserService interface {
 	GetUser(ctx context.Context, id int64) (db.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context, limit int32) ([]db.ListUsersRow, error)
-	// Login(ctx context.Context, email, password string) (user db.User, token string, err error)
 }
 
 type userService struct {
 	store UserStore
-	// jwtkey []byte
 }
 
 func NewUserService(s UserStore) *userService {
 	return &userService{
 		store: s,
-		// jwtkey: jwtkey,
 	}
 }
 
