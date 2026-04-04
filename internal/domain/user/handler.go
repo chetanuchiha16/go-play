@@ -68,24 +68,24 @@ func (h *Handler) GetUser(c fuego.ContextNoBody) (response.GenericResponse[UserR
 		return response.GenericResponse[UserResponse]{}, errors.MapError(err, idStr)
 	}
 
-	return response.Success(int(http.StatusAccepted),NewUserResponse(user), "List of users"), nil
+	return response.Detail(NewUserResponse(user), "User"), nil
 }
 
 // 3. ListUser (STAYS THE SAME)
-func (h *Handler) ListUser(c fuego.ContextNoBody) ([]db.ListUsersRow, error) {
+func (h *Handler) ListUser(c fuego.ContextNoBody) (response.GenericResponse[[]db.ListUsersRow], error) {
 	limitStr := c.QueryParam("limit")
 	if limitStr == "" {
 		limitStr = "3"
 	}
 	limit, err := strconv.ParseInt(limitStr, 10, 32)
 	if err != nil {
-		return []db.ListUsersRow{}, errors.MapError(err, "limit")
+		return response.List([]db.ListUsersRow{}), errors.MapError(err, "limit")
 	}
 	users, err := h.service.ListUsers(c.Context(), int32(limit))
 	if err != nil {
-		return []db.ListUsersRow{}, errors.MapError(err, "users")
+		return response.List([]db.ListUsersRow{}), errors.MapError(err, "users")
 	}
-	return users, nil
+	return response.List(users, "User List"), nil
 }
 
 // 4. DeleteUser (UPDATED: Use ContextNoBody)
