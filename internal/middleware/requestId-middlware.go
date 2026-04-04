@@ -11,7 +11,7 @@ import (
 
 const id pkg.ContextKey = "request_id"
 
-func (MiddlewareManager) RequestIdMiddleWare(next http.Handler) http.Handler {
+func (MiddlewareManager) RequestIdMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		request_id := fmt.Sprintf("%d", time.Now().UnixNano())

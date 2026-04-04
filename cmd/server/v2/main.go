@@ -61,7 +61,7 @@ func main() {
 
 	mw := middleware.NewMiddlewareManager()
 	fuego.Use(s, mw.CorsMiddleware)
-	fuego.Use(s, mw.RequestIdMiddleWare)
+	fuego.Use(s, mw.RequestIdMiddleware)
 	fuego.Use(s, mw.LoggerMiddleware)
 
 	fuego.Get(s, "/health", func(c fuego.ContextNoBody) (string, error) {
@@ -86,13 +86,13 @@ func main() {
 	}()
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
-	fmt.Println("kill recieved")
+	fmt.Println("kill received")
 	fmt.Println("Shutting down gracefully")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	fmt.Println("resourse releasing")
+	fmt.Println("resource releasing")
 	if err := s.Shutdown(ctx); err != nil {
 		log.Fatalf("forcfully shutting down %v", err)
 	}
