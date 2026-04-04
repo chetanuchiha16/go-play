@@ -6,6 +6,7 @@ import (
 
 	"github.com/chetanuchiha16/go-play/db"
 	"github.com/chetanuchiha16/go-play/internal/errors"
+	"github.com/chetanuchiha16/go-play/pkg/response"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
@@ -52,22 +53,22 @@ func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (UserResp
 }
 
 // 2. GetUser (UPDATED: Use ContextNoBody)
-func (h *Handler) GetUser(c fuego.ContextNoBody) (UserResponse, error) {
+func (h *Handler) GetUser(c fuego.ContextNoBody) (response.GenericResponse[UserResponse], error) {
 	// Fuego gives you path parameters as strings
 	idStr := c.PathParam("id")
 
 	// Convert string "123" to int64
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return UserResponse{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
+		return response.GenericResponse[UserResponse]{}, errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
 	}
 
 	user, err := h.service.GetUser(c.Context(), id)
 	if err != nil {
-		return UserResponse{}, errors.MapError(err, idStr)
+		return response.GenericResponse[UserResponse]{}, errors.MapError(err, idStr)
 	}
 
-	return NewUserResponse(user), nil
+	return response.Success(int(http.StatusAccepted),NewUserResponse(user), "List of users"), nil
 }
 
 // 3. ListUser (STAYS THE SAME)
