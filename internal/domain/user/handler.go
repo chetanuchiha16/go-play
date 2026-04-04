@@ -48,7 +48,7 @@ func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (UserResp
 	if err != nil {
 		return UserResponse{}, errors.MapError(err, body.Name)
 	}
-	return NewUserResponse(user), errors.MapError(err, user.Name)
+	return NewUserResponse(user), nil
 }
 
 // 2. GetUser (UPDATED: Use ContextNoBody)
