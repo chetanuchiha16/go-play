@@ -58,12 +58,17 @@ func main() {
 		http.ServeFile(w, r, "api/openapi.yaml")
 	})
 
-	// Swagger UI at /docs
-	mux.Handle("GET /docs", swaggerui.NewHandler(
+	// Swagger UI at /docs/ (trailing slash so static assets are served too)
+	swaggerHandler := swaggerui.NewHandler(
 		swaggerui.WithSpecURL("/openapi.yaml"),
 		swaggerui.WithPersistAuthorization(true),
 		swaggerui.WithTryItOutEnabled(true),
-	))
+	)
+	mux.Handle("/docs/", http.StripPrefix("/docs", swaggerHandler))
+	// Redirect /docs → /docs/ for convenience
+	mux.HandleFunc("GET /docs", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
+	})
 
 	// ── Global middleware stack ────────────────────────────────────
 	mw := middleware.NewMiddlewareManager()
