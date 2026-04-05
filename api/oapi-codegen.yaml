@@ -1,0 +1,3 @@
+package: api
+output: ../internal/api/generated.go
+generate: types,std-http,spec

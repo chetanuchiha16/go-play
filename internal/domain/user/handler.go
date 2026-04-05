@@ -1,107 +1,137 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv" // To convert the ID string to an int64
 
-	"github.com/chetanuchiha16/go-play/db"
-	"github.com/chetanuchiha16/go-play/internal/errors"
-	"github.com/chetanuchiha16/go-play/pkg/response"
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/option"
-	"github.com/go-fuego/fuego/param"
+	"github.com/chetanuchiha16/go-play/internal/api"
+	apierrors "github.com/chetanuchiha16/go-play/internal/errors"
 )
 
+// Handler implements user-related ServerInterface methods.
 type Handler struct {
 	service UserService
 }
 
-func NewUserHandler(s UserService) *Handler {
+// NewHandler creates a new user Handler.
+func NewHandler(s UserService) *Handler {
 	return &Handler{service: s}
 }
 
-func (h *Handler) RegisterUserRoutes(s *fuego.Server, authmw func(http.Handler) http.Handler) {
+// CreateUser registers a new user.
+// (POST /users)
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var req api.CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		api.WriteError(w, http.StatusBadRequest, "Invalid Request Body", "Could not decode JSON request body")
+		return
+	}
 
-	userRoutes := fuego.Group(s, "/users")
-	fuego.Post(userRoutes, "/", h.CreateUser, option.RequestContentType("application/x-www-form-urlencoded"))
-	fuego.Get(userRoutes, "/", h.ListUser, option.QueryInt("limit", "Maximum number of users to return", param.Default(20)))
-	fuego.Get(userRoutes, "/{id}", h.GetUser)
+	schema := CreateUserShema{
+		Name:     req.Name,
+		Email:    string(req.Email),
+		Password: req.Password,
+	}
 
-	//protected routes
-	authGroup := fuego.Group(s, "/users", 
-        option.Security(openapi3.SecurityRequirement{"bearerAuth": []string{}}),
-    )
-	fuego.Use(authGroup, authmw)
+	dbUser, err := h.service.CreateUser(r.Context(), schema)
+	if err != nil {
+		apiErr := apierrors.MapError(err, schema.Name)
+		api.WriteError(w, apiErr.Status, apiErr.Title, apiErr.Detail)
+		return
+	}
 
-	// Use option.Security to tell Swagger this specific route needs the token
-	fuego.Delete(authGroup, "/{id}", h.DeleteUser)
-
+	status := "success"
+	msg := fmt.Sprintf("User %v created successfully", dbUser.Name)
+	createdAt := dbUser.CreatedAt.Time
+	api.WriteJSON(w, http.StatusCreated, api.UserSuccessResponse{
+		Status:  &status,
+		Message: &msg,
+		Data: &api.UserData{
+			Id:        &dbUser.ID,
+			Name:      &dbUser.Name,
+			Email:     &dbUser.Email,
+			CreatedAt: &createdAt,
+		},
+	})
 }
 
-// 1. CreateUser (STAYS THE SAME - This one uses a Body)
-func (h *Handler) CreateUser(c fuego.ContextWithBody[CreateUserShema]) (response.GenericResponse[UserResponse], error) {
-	body, err := c.Body()
-	if err != nil {
-		return response.Created(UserResponse{}), err
+// ListUsers returns a paginated list of users.
+// (GET /users)
+func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request, params api.ListUsersParams) {
+	limit := int32(20)
+	if params.Limit != nil {
+		limit = int32(*params.Limit)
 	}
-	user, err := h.service.CreateUser(c.Context(), body)
+
+	users, err := h.service.ListUsers(r.Context(), limit)
 	if err != nil {
-		return response.Created(UserResponse{}), errors.MapError(err, body.Name)
+		apiErr := apierrors.MapError(err, "users")
+		api.WriteError(w, apiErr.Status, apiErr.Title, apiErr.Detail)
+		return
 	}
-	return response.Created(NewUserResponse(user), fmt.Sprintf("User %v", user.Name)), nil
+
+	data := make([]api.UserData, 0, len(users))
+	for _, u := range users {
+		id := u.ID
+		name := u.Name
+		email := u.Email
+		createdAt := u.CreatedAt.Time
+		data = append(data, api.UserData{
+			Id:        &id,
+			Name:      &name,
+			Email:     &email,
+			CreatedAt: &createdAt,
+		})
+	}
+
+	status := "success"
+	msg := "Users retrieved successfully"
+	api.WriteJSON(w, http.StatusOK, api.UserListResponse{
+		Status:  &status,
+		Message: &msg,
+		Data:    &data,
+	})
 }
 
-// 2. GetUser (UPDATED: Use ContextNoBody)
-func (h *Handler) GetUser(c fuego.ContextNoBody) (response.GenericResponse[UserResponse], error) {
-	// Fuego gives you path parameters as strings
-	idStr := c.PathParam("id")
-
-	// Convert string "123" to int64
-	id, err := strconv.ParseInt(idStr, 10, 64)
+// GetUser retrieves a single user by ID.
+// (GET /users/{id})
+func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request, id api.UserId) {
+	dbUser, err := h.service.GetUser(r.Context(), id)
 	if err != nil {
-		return response.Detail(UserResponse{}), errors.MapError(err, idStr) // Fuego will turn this into a 400 Bad Request automatically
+		apiErr := apierrors.MapError(err, fmt.Sprintf("%d", id))
+		api.WriteError(w, apiErr.Status, apiErr.Title, apiErr.Detail)
+		return
 	}
 
-	user, err := h.service.GetUser(c.Context(), id)
-	if err != nil {
-		return response.Detail(UserResponse{}), errors.MapError(err, idStr)
-	}
-
-	return response.Detail(NewUserResponse(user), fmt.Sprintf("User %v", user.Name)), nil
+	status := "success"
+	msg := fmt.Sprintf("User %v retrieved successfully", dbUser.Name)
+	createdAt := dbUser.CreatedAt.Time
+	api.WriteJSON(w, http.StatusOK, api.UserSuccessResponse{
+		Status:  &status,
+		Message: &msg,
+		Data: &api.UserData{
+			Id:        &dbUser.ID,
+			Name:      &dbUser.Name,
+			Email:     &dbUser.Email,
+			CreatedAt: &createdAt,
+		},
+	})
 }
 
-type ListUserRows  response.GenericResponse[[]db.ListUsersRow]
-// 3. ListUser (STAYS THE SAME)
-func (h *Handler) ListUser(c fuego.ContextNoBody) (ListUserRows, error) {
-	limitStr := c.QueryParam("limit")
-	if limitStr == "" {
-		limitStr = "3"
-	}
-	limit, err := strconv.ParseInt(limitStr, 10, 32)
-	if err != nil {
-		return ListUserRows(response.List([]db.ListUsersRow{})), errors.MapError(err, "limit")
-	}
-	users, err := h.service.ListUsers(c.Context(), int32(limit))
-	if err != nil {
-		return ListUserRows(response.List([]db.ListUsersRow{})), errors.MapError(err, "users")
-	}
-	return ListUserRows(response.List(users, "User List")), nil
-}
-
-// 4. DeleteUser (UPDATED: Use ContextNoBody)
-func (h *Handler) DeleteUser(c fuego.ContextNoBody) (any, error) {
-	idStr := c.PathParam("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return db.User{}, errors.MapError(err, idStr)
+// DeleteUser removes a user by ID (requires Bearer auth).
+// (DELETE /users/{id})
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request, id api.UserId) {
+	if err := h.service.DeleteUser(r.Context(), id); err != nil {
+		apiErr := apierrors.MapError(err, fmt.Sprintf("%d", id))
+		api.WriteError(w, apiErr.Status, apiErr.Title, apiErr.Detail)
+		return
 	}
 
-	err = h.service.DeleteUser(c.Context(), id)
-	if err != nil {
-		return nil, errors.MapError(err, idStr)
-	}
-
-	return response.Deleted(fmt.Sprintf("User %v", idStr)), nil
+	status := "success"
+	msg := fmt.Sprintf("User %v deleted successfully", id)
+	api.WriteJSON(w, http.StatusOK, api.DeleteResponse{
+		Status:  &status,
+		Message: &msg,
+	})
 }

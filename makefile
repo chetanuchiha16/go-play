@@ -1,8 +1,8 @@
 # Variables
 BINARY_NAME=bin/server
-MAIN_PATH=cmd/server/v2/main.go
+MAIN_PATH=cmd/server/main.go
 
-.PHONY: dev build run sqlc clean up down
+.PHONY: dev build run sqlc clean up down generate
 
 # Start local development with hot reloading (Air)
 dev:
@@ -19,6 +19,10 @@ run: build
 # Generate type-safe Go code from your SQL
 sqlc:
 	sqlc generate
+
+# Generate oapi-codegen server stubs from OpenAPI spec
+generate:
+	oapi-codegen -generate types,std-http,spec -package api -o internal/api/generated.go api/openapi.yaml
 
 # --- DOCKER COMMANDS ---
 
