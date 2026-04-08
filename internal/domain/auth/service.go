@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/chetanuchiha16/go-play/db"
@@ -16,6 +17,7 @@ type AuthService interface {
 	Login(ctx context.Context, email, password string) (user db.User, token string, err error)
 	GenerateToken(user_id int64) (string, error)
 	ValidateToken(tokenString string) (jwt.MapClaims, error)
+	AuthMiddleware(next http.Handler) http.Handler
 }
 
 type authService struct {

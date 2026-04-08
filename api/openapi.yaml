@@ -1,0 +1,320 @@
+openapi: "3.0.3"
+
+info:
+  title: Go-Play API
+  description: User management and authentication API
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:9999
+    description: Local development server
+
+tags:
+  - name: health
+    description: Health check
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      summary: Authenticate a user and return a JWT token
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccessResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    post:
+      operationId: createUser
+      summary: Register a new user
+      tags: [users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSuccessResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      operationId: listUsers
+      summary: List users with optional limit
+      tags: [users]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Maximum number of users to return
+      responses:
+        "200":
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      summary: Get a user by ID
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSuccessResponse"
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteUser
+      summary: Delete a user by ID
+      tags: [users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: Unique user identifier
+
+  schemas:
+    # ---------- Request schemas ----------
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+
+    # ---------- Response envelope ----------
+
+    Meta:
+      type: object
+      properties:
+        request_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    UserData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    LoginData:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserData"
+
+    # ---------- Concrete response types ----------
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+
+    LoginSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/LoginData"
+
+    UserSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/UserData"
+
+    UserListResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserData"
+
+    DeleteResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      description: RFC 7807 Problem Details
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        title:
+          type: string
+          description: Short title of the error
+        detail:
+          type: string
+          description: Human-readable error message
