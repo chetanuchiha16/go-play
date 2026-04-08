@@ -35,7 +35,7 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := "success"
+	status := http.StatusOK
 	msg := "Login successful"
 	createdAt := dbUser.CreatedAt.Time
 	api.WriteJSON(w, http.StatusOK, api.LoginSuccessResponse{

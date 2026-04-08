@@ -48,7 +48,7 @@ func (s *Server) HealthCheck(w http.ResponseWriter, r *http.Request) {
 		api.WriteError(w, http.StatusServiceUnavailable, "Database connection failed", "Database unavailable at the moment")
 		return
 	}
-	status := "success"
+	status := http.StatusOK
 	msg := "OK"
 	api.WriteJSON(w, http.StatusOK, api.HealthResponse{Status: &status, Message: &msg})
 }

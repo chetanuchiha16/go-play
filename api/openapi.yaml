@@ -256,7 +256,8 @@ components:
       type: object
       properties:
         status:
-          type: string
+          type: integer
+          description: HTTP status code
         message:
           type: string
 
@@ -264,7 +265,8 @@ components:
       type: object
       properties:
         status:
-          type: string
+          type: integer
+          description: HTTP status code
         message:
           type: string
         data:
@@ -274,7 +276,8 @@ components:
       type: object
       properties:
         status:
-          type: string
+          type: integer
+          description: HTTP status code
         message:
           type: string
         data:
@@ -284,7 +287,8 @@ components:
       type: object
       properties:
         status:
-          type: string
+          type: integer
+          description: HTTP status code
         message:
           type: string
         data:
@@ -296,7 +300,8 @@ components:
       type: object
       properties:
         status:
-          type: string
+          type: integer
+          description: HTTP status code
         message:
           type: string
 

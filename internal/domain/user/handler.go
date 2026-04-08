@@ -41,7 +41,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := "success"
+	status := http.StatusCreated
 	msg := fmt.Sprintf("User %v created successfully", dbUser.Name)
 	createdAt := dbUser.CreatedAt.Time
 	api.WriteJSON(w, http.StatusCreated, api.UserSuccessResponse{
@@ -85,7 +85,7 @@ func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request, params api.L
 		})
 	}
 
-	status := "success"
+	status := http.StatusOK
 	msg := "Users retrieved successfully"
 	api.WriteJSON(w, http.StatusOK, api.UserListResponse{
 		Status:  &status,
@@ -104,7 +104,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request, id api.UserId)
 		return
 	}
 
-	status := "success"
+	status := http.StatusOK
 	msg := fmt.Sprintf("User %v retrieved successfully", dbUser.Name)
 	createdAt := dbUser.CreatedAt.Time
 	api.WriteJSON(w, http.StatusOK, api.UserSuccessResponse{
@@ -128,7 +128,7 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request, id api.User
 		return
 	}
 
-	status := "success"
+	status := http.StatusOK
 	msg := fmt.Sprintf("User %v deleted successfully", id)
 	api.WriteJSON(w, http.StatusOK, api.DeleteResponse{
 		Status:  &status,

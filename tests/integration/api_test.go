@@ -31,7 +31,7 @@ const baseURL = "http://localhost:9999"
 
 // APIResponse represents a successful GenericResponse[T]
 type APIResponse struct {
-	Status  string          `json:"status"`
+	Status  int             `json:"status"`
 	Message string          `json:"message"`
 	Data    json.RawMessage `json:"data"`
 	Errors  json.RawMessage `json:"errors"`
@@ -130,7 +130,7 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	apiResp := parseSuccess(t, body)
-	assert.Equal(t, "success", apiResp.Status)
+	assert.Equal(t, http.StatusCreated, apiResp.Status)
 	assert.Contains(t, apiResp.Message, "created successfully")
 
 	var userData UserData
@@ -185,7 +185,7 @@ func TestGetUser_Success(t *testing.T) {
 	apiResp := parseSuccess(t, body)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, "success", apiResp.Status)
+	assert.Equal(t, http.StatusOK, apiResp.Status)
 
 	var userData UserData
 	err = json.Unmarshal(apiResp.Data, &userData)
@@ -224,7 +224,7 @@ func TestListUsers(t *testing.T) {
 	apiResp := parseSuccess(t, body)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, "success", apiResp.Status)
+	assert.Equal(t, http.StatusOK, apiResp.Status)
 
 	// Data should be an array
 	var users []UserData
