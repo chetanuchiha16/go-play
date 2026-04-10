@@ -32,7 +32,6 @@ func (s *userService) CreateUser(ctx context.Context, args CreateUserShema) (db.
 		log.Println("error making hash")
 		return db.User{}, err
 	}
-	
 
 	user := db.CreateUserParams{Name: args.Name, PasswordHash: string(password_hash), Email: args.Email}
 	return s.store.CreateUser(ctx, user)
@@ -51,5 +50,3 @@ func (s *userService) DeleteUser(ctx context.Context, id int64) error {
 func (s *userService) ListUsers(ctx context.Context, limit int32) ([]db.ListUsersRow, error) {
 	return s.store.ListUsers(ctx, limit)
 }
-
-

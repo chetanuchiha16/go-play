@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,6 +14,7 @@ import (
 	"github.com/chetanuchiha16/go-play/internal/database"
 	"github.com/chetanuchiha16/go-play/internal/domain/auth"
 	"github.com/chetanuchiha16/go-play/internal/domain/user"
+	"github.com/chetanuchiha16/go-play/internal/logger"
 	"github.com/chetanuchiha16/go-play/internal/middleware"
 	"github.com/chetanuchiha16/go-play/internal/server"
 )
@@ -24,9 +24,11 @@ import (
 func main() {
 	// ── Config & DB ───────────────────────────────────────────────
 	cfg := config.Load()
+	logger.Init(cfg.ENV)
+
 	pool, err := database.NewPool(context.Background(), cfg.DATABASE_URL)
 	if err != nil {
-		log.Fatal("error connecting to the db")
+		logger.Log.Fatal().Msg("error connecting to the db")
 	}
 	defer pool.Close()
 	store := database.NewStore(pool)
@@ -85,10 +87,10 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Server listening on %s", httpServer.Addr)
-		log.Printf("Swagger UI: http://localhost%s/docs", httpServer.Addr)
+		logger.Log.Info().Msgf("Server listening on %s", httpServer.Addr)
+		logger.Log.Info().Msgf("Swagger UI: http://localhost%s/docs", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			logger.Log.Fatal().Err(err).Msg("listen")
 		}
 	}()
 
@@ -97,15 +99,15 @@ func main() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
 
-	log.Println("Shutting down gracefully...")
+	logger.Log.Info().Msg("Shutting down gracefully...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+		logger.Log.Fatal().Err(err).Msg("Server forced to shutdown")
 	}
-	log.Println("Server exiting")
+	logger.Log.Info().Msg("Server exiting")
 }
 
 // authBearerMiddleware returns an oapi-codegen MiddlewareFunc that enforces

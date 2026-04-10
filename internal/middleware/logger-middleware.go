@@ -1,30 +1,13 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/chetanuchiha16/go-play/internal/logger"
 )
 
-// Define simple ANSI codes
-const (
-	colorReset = "\033[0m"
-	colorRed   = "\033[31m"
-	colorGreen = "\033[32m"
-)
 
-func init() {
-	output := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: "15:04:05",
-		NoColor:    false, // Ensure colors are enabled
-	}
-	log.Logger = zerolog.New(output).With().Timestamp().Caller().Logger()
-}
 
 type loggingResponseWriter struct {
 	http.ResponseWriter
@@ -42,34 +25,17 @@ func (MiddlewareManager) LoggerMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(lrw, r) // call next by providing lrw and r
 
-		// 1. Determine the color for the status code ONLY
-		var statusColor string
-		switch {
-		case lrw.statusCode >= 500:
-			statusColor = colorRed
-		case lrw.statusCode >= 400:
-			statusColor = colorRed
-		default:
-			statusColor = colorGreen
-		}
-
-		// 2. Format the status code with the color strings
-		coloredStatus := fmt.Sprintf("%s%d%s", statusColor, lrw.statusCode, colorReset)
-
-		// 3. Print the log
-		// Note: We use log.Info() for everything now so the whole line
-		// isn't red—only the status code we just formatted.
 		reqId, ok := r.Context().Value("request_id").(string)
 		if !ok {
 			reqId = "unknown"
 		}
-		log.Info().
-			Str("id ", reqId).
-			Msgf("%-3s %s %s %s",
-				r.Method,
-				r.URL.Path,
-				coloredStatus,
-				time.Since(start),
-			)
+
+		logger.Log.Info().
+			Str("id", reqId).
+			Str("method", r.Method).
+			Str("path", r.URL.Path).
+			Int("status", lrw.statusCode).
+			Dur("latency", time.Since(start)).
+			Msgf("%s %s %d", r.Method, r.URL.Path, lrw.statusCode)
 	})
 }

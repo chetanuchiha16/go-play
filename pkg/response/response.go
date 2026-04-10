@@ -3,11 +3,11 @@ package response
 import "time"
 
 type GenericResponse[T any] struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message,omitempty"`
-	Data    *T          `json:"data,omitempty"`
-	Errors  any `json:"errors,omitempty"`
-	Meta    *Meta       `json:"meta,omitempty"`
+	Status  string `json:"status"`
+	Message string `json:"message,omitempty"`
+	Data    *T     `json:"data,omitempty"`
+	Errors  any    `json:"errors,omitempty"`
+	Meta    *Meta  `json:"meta,omitempty"`
 }
 
 type Meta struct {
@@ -31,7 +31,7 @@ func Success[T any](code int, data T, message string) GenericResponse[T] {
 }
 
 // SuccessWithMeta for responses with pagination etc.
-func SuccessWithMeta[T any](code int, data T, meta Meta) GenericResponse[T]{
+func SuccessWithMeta[T any](code int, data T, meta Meta) GenericResponse[T] {
 	resp := GenericResponse[T]{
 		Status: "success",
 		Data:   &data,

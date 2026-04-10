@@ -22,7 +22,7 @@ type UserResponse struct {
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
-func NewUserResponse(user db.User) UserResponse{
+func NewUserResponse(user db.User) UserResponse {
 	return UserResponse{
 		user.ID,
 		user.Name,
