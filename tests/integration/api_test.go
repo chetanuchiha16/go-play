@@ -1,3 +1,5 @@
+//go:build integration
+
 // Package integration contains HTTP-level integration tests that validate
 // the API contract. These tests are framework-agnostic — they make real HTTP
 // requests and verify the response shape, status codes, and headers.

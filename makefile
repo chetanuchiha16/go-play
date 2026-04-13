@@ -41,9 +41,13 @@ clean:
 mock:
 	mockery
 
-# Run all tests in the project
+# Run all tests in the project (excludes integration tests)
 test:
 	go test -v ./...
+
+# Run integration tests (requires server on :9999 and PostgreSQL)
+test-integration:
+	go test -tags=integration -v ./tests/integration/
 
 # Ensure all dependencies are in sync
 tidy:
