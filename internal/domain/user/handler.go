@@ -7,16 +7,21 @@ import (
 
 	"github.com/chetanuchiha16/go-play/internal/api"
 	apierrors "github.com/chetanuchiha16/go-play/internal/errors"
+	"github.com/go-playground/validator/v10"
 )
 
 // Handler implements user-related ServerInterface methods.
 type Handler struct {
-	service UserService
+	service  UserService
+	validate *validator.Validate
 }
 
 // NewHandler creates a new user Handler.
 func NewHandler(s UserService) *Handler {
-	return &Handler{service: s}
+	return &Handler{
+		service: s, 
+		validate: validator.New(),
+	}
 }
 
 // CreateUser registers a new user.
@@ -32,6 +37,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Name:     req.Name,
 		Email:    string(req.Email),
 		Password: req.Password,
+	}
+
+	if err := h.validate.Struct(schema); err != nil {
+		api.WriteError(w, http.StatusBadRequest, "Validation Error", err.Error())
+		return
 	}
 
 	dbUser, err := h.service.CreateUser(r.Context(), schema)
