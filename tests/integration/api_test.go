@@ -12,13 +12,12 @@
 package integration
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
-	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -82,15 +81,16 @@ func parseSuccess(t *testing.T, body []byte) APIResponse {
 
 func createUser(t *testing.T, name, email, password string) (*http.Response, []byte) {
 	t.Helper()
-	form := url.Values{}
-	form.Set("name", name)
-	form.Set("email", email)
-	form.Set("password", password)
+	body, _ := json.Marshal(map[string]string{
+		"name":     name,
+		"email":    email,
+		"password": password,
+	})
 
 	resp, err := http.Post(
-		baseURL+"/users/",
-		"application/x-www-form-urlencoded",
-		strings.NewReader(form.Encode()),
+		baseURL+"/users",
+		"application/json",
+		bytes.NewReader(body),
 	)
 	require.NoError(t, err)
 
@@ -99,14 +99,15 @@ func createUser(t *testing.T, name, email, password string) (*http.Response, []b
 
 func login(t *testing.T, email, password string) (*http.Response, []byte) {
 	t.Helper()
-	form := url.Values{}
-	form.Set("email", email)
-	form.Set("password", password)
+	body, _ := json.Marshal(map[string]string{
+		"email":    email,
+		"password": password,
+	})
 
 	resp, err := http.Post(
 		baseURL+"/auth/login",
-		"application/x-www-form-urlencoded",
-		strings.NewReader(form.Encode()),
+		"application/json",
+		bytes.NewReader(body),
 	)
 	require.NoError(t, err)
 
@@ -127,7 +128,7 @@ func TestCreateUser_Success(t *testing.T) {
 	email := randomEmail()
 	resp, body := createUser(t, "Integration Test User", email, "securepassword123")
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 	apiResp := parseSuccess(t, body)
 	assert.Equal(t, http.StatusCreated, apiResp.Status)
@@ -147,7 +148,7 @@ func TestCreateUser_DuplicateEmail(t *testing.T) {
 
 	// Create the first user
 	resp1, _ := createUser(t, "First User", email, "password123!")
-	assert.Equal(t, http.StatusOK, resp1.StatusCode)
+	assert.Equal(t, http.StatusCreated, resp1.StatusCode)
 
 	// Try to create a second user with the same email — expect RFC 7807 error
 	resp2, body := createUser(t, "Second User", email, "password456!")
@@ -217,7 +218,7 @@ func TestListUsers(t *testing.T) {
 	createUser(t, "List Test User 1", randomEmail(), "password123!")
 	createUser(t, "List Test User 2", randomEmail(), "password123!")
 
-	resp, err := http.Get(baseURL + "/users/?limit=5")
+	resp, err := http.Get(baseURL + "/users?limit=5")
 	require.NoError(t, err)
 
 	body := readBody(t, resp)
@@ -239,7 +240,7 @@ func TestLogin_Success(t *testing.T) {
 
 	// Create user first
 	createResp, _ := createUser(t, "Login Test User", email, password)
-	assert.Equal(t, http.StatusOK, createResp.StatusCode)
+	assert.Equal(t, http.StatusCreated, createResp.StatusCode)
 
 	// Login
 	resp, body := login(t, email, password)
@@ -260,7 +261,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 
 	// Create user
 	createResp, _ := createUser(t, "Wrong Password User", email, "correctpassword")
-	assert.Equal(t, http.StatusOK, createResp.StatusCode)
+	assert.Equal(t, http.StatusCreated, createResp.StatusCode)
 
 	// Login with wrong password — expect RFC 7807 error
 	resp, body := login(t, email, "wrongpassword")
@@ -344,7 +345,7 @@ func TestFullUserLifecycle(t *testing.T) {
 
 	// 1. Create
 	createHTTP, createBody := createUser(t, "Lifecycle User", email, password)
-	assert.Equal(t, http.StatusOK, createHTTP.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHTTP.StatusCode)
 
 	createResp := parseSuccess(t, createBody)
 	var createdUser UserData
