@@ -1,11 +1,11 @@
 -- +goose Up
 CREATE TABLE permissions (
-    id SERIAL INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE roles (
-    id SERIAL INT,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
