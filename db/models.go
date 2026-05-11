@@ -32,6 +32,6 @@ type User struct {
 }
 
 type UserRole struct {
-	UsersID pgtype.Int4 `json:"users_id"`
-	PermID  int32       `json:"perm_id"`
+	UserID int32 `json:"user_id"`
+	PermID int32 `json:"perm_id"`
 }

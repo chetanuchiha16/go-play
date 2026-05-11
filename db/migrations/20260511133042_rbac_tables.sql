@@ -11,7 +11,7 @@ CREATE TABLE roles (
 
 -- Pivot table for users and roles
 CREATE TABLE user_role (
-    users_id INT REFERENCES users(id),
+    user_id INT REFERENCES users(id),
     perm_id INT REFERENCES permissions(id),
     PRIMARY KEY (user_id, perm_id)
 );
